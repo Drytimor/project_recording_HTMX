@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title%}Профиль{% endblock %}
+
+
+{% block profile_nav_bar %}
+{% csrf_token %}
+<li class="nav-item"><a class="ms-2 nav-link text-white"
+                        role="button"
+                        hx-get="{% url 'profile_htmx' pk=user.id %}"
+                        hx-target="#central-col"
+                        hx-swap="innerHTML">{{ user.username }}</a></li>
+<li class="nav-item"><a class="nav-link text-white"
+                        role="button"
+                        hx-post="{% url 'account_logout' %}"
+                        hx-push-url="{% url 'home' %}">выход</a></li>
+
+
+
+<script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        })
+</script>
+
+{% endblock profile_nav_bar %}
+
+{% block profile_info %}
+    {% include 'profile_htmx.html' %}
+    {% block content %}
+    {% endblock content %}
+{% endblock profile_info %}

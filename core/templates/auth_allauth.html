@@ -1,0 +1,32 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{% static 'core/bootstrap5/css/bootstrap.css' %}" rel="stylesheet">
+        <script defer src="{% static 'core/bootstrap5/js/bootstrap.bundle.js' %}"></script>
+        <script defer src="{% static 'core/htmx/htmx.min.js' %}"></script>
+        <title>
+            {% block head_title %}
+            {% endblock head_title %}
+        </title>
+        {% block extra_head %}
+        {% endblock extra_head %}
+    </head>
+    <body>
+
+        {% block body %}
+
+            {% block content %}
+            {% endblock content %}
+
+        {% endblock body %}
+
+        {% block extra_body %}
+        {% endblock extra_body %}
+
+    </body>
+</html>

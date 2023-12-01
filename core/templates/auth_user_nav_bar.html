@@ -1,0 +1,21 @@
+{% csrf_token %}
+<li class="nav-item"><a class="ms-2 nav-link text-white"
+                        role="button"
+                        hx-get="{% url 'profile_htmx' pk=user.id %}"
+                        hx-target="#central-col"
+                        hx-swap="innerHTML"
+                        hx-push-url="{% url 'profile' %}">{{ user.username }}</a></li>
+
+<li class="nav-item"><a class="nav-link text-white"
+                        role="button"
+                        hx-post="{% url 'account_logout' %}"
+                        hx-push-url="{% url 'home' %}">выход</a></li>
+
+
+
+<script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        })
+</script>
+
