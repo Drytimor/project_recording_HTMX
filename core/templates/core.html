@@ -1,0 +1,25 @@
+{% if emailaddresses %}
+        {% if current_emailaddress %}
+            <p>
+                Ваш Email: <a href="mailto:{{ current_emailaddress.email }}">{{ current_emailaddress.email }}</a> подтвержден
+            </p>
+        {% endif %}
+        {% if new_emailaddress %}
+            <p>
+                Ваш новый Email: <a href="mailto:{{ new_emailaddress.email }}">{{ new_emailaddress.email }}</a> ожидает подтверждения
+            </p>
+            <form id="account-email"
+                  hx-post="{% url 'account_email' %}"
+                  hx-target="#modal-form"
+                  hx-swap="innerHTML">
+                {% csrf_token %}
+                <input type="hidden" name="email" value="{{ new_emailaddress.email }}">
+                <input tabindex="0" id="email-confirmation-submit" type="submit" name="action_send" class="btn btn-secondary" value="Отправить подтверждение">
+            </form>
+        {% endif %}
+    {% else %}
+        {% include "account/snippets/warn_no_email.html" %}
+    {% endif %}
+
+    <p>Изменить Email адрес</p>
+

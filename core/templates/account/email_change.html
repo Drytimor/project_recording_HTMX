@@ -35,7 +35,7 @@
 
 {% block content %}
 
-    {% if emailaddresses %}
+{% if emailaddresses %}
         {% if current_emailaddress %}
             <p>
                 Ваш Email: <a href="mailto:{{ current_emailaddress.email }}">{{ current_emailaddress.email }}</a> подтвержден

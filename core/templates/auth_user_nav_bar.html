@@ -1,8 +1,8 @@
 {% csrf_token %}
 <li class="nav-item"><a class="ms-2 nav-link text-white"
                         role="button"
-                        hx-get="{% url 'profile_htmx' pk=user.id %}"
-                        hx-target="#central-col"
+                        hx-get="{% url 'profile_htmx' %}"
+                        hx-target="#row-main"
                         hx-swap="innerHTML"
                         hx-push-url="{% url 'profile' %}">{{ user.username }}</a></li>
 

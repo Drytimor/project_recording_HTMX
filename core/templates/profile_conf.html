@@ -1,0 +1,19 @@
+{% if user.is_authenticated %}
+    <div>
+        <p><a hx-get="{% url 'account_email' %}"
+          role="button"
+          hx-target="#central-col">управление почтой</a></p>
+    </div>
+
+    <div>
+        <p><a hx-get="{% url 'account_change_password' %}"
+          role="button"
+          hx-target="#central-col">изменить пароль</a></p>
+    </div>
+
+    <div>
+        <p><a hx-get="{% url 'organization_profile' %}"
+          role="button"
+          hx-target="#central-col">Организация</a></p>
+    </div>
+{% endif %}

@@ -1,16 +1,18 @@
 from allauth.account.forms import (SignupForm, LoginForm, ResetPasswordForm, ChangePasswordForm, AddEmailForm,
-                                   ResetPasswordKeyForm)
+                                   ResetPasswordKeyForm, SetPasswordForm)
+from allauth.socialaccount.templatetags.socialaccount import provider_login_url
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Button, ButtonHolder, HTML, Layout, Field, Fieldset
+from crispy_forms.layout import Submit, Button
+from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy, NoReverseMatch
 from django.utils.safestring import mark_safe
-from django.forms import forms, EmailField, CharField
-from crispy_forms_foundation.layout.buttons import ButtonElement
+from django import forms
+from .models import Organizations, Categories
 
 
 class MyCustomSignupForm(SignupForm):
-
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
         try:
             login_url = reverse_lazy('account_login')
@@ -24,10 +26,19 @@ class MyCustomSignupForm(SignupForm):
         self.helper.form_id = 'create-user-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('account_signup'),
-            'hx-target': '#create-user-form',
+            'hx-target': 'this',
             'hx-swap': 'outerHTML',
         }
-        self.helper.add_input(Submit('submit', 'Зарегистрироваться'))
+        self.helper.add_input(Submit(name='submit',
+                                     value='Зарегистрироваться'))
+
+        self.helper.add_input(Button(name='button',
+                                     value='Google',
+                                     css_class='btn-outline-info',
+                                     hx_get=provider_login_url(context={'request':
+                                                                        self.request},
+                                                               provider='google',
+                                                               next='/')))
 
 
 class MyCustomLoginFrom(LoginForm):
@@ -55,10 +66,20 @@ class MyCustomLoginFrom(LoginForm):
         self.helper.form_id = 'auth-user-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('account_login'),
-            'hx-target': '#auth-user-form',
+            'hx-target': 'this',
             'hx-swap': 'outerHTML',
         }
-        self.helper.add_input(Submit('submit', 'Войти'))
+        self.helper.add_input(Submit(name='submit',
+                                     value='Войти',
+                                     css_class='btn btn-primary'))
+
+        self.helper.add_input(Button(name='button',
+                                     value='Google',
+                                     css_class='btn-outline-info',
+                                     hx_get=provider_login_url(context={'request':
+                                                                        self.request},
+                                                               provider='google',
+                                                               next='/')))
 
 
 class MyCustomResetPasswordForm(ResetPasswordForm):
@@ -73,10 +94,11 @@ class MyCustomResetPasswordForm(ResetPasswordForm):
         self.helper.form_id = 'reset-password-user-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('account_reset_password'),
-            'hx-target': '#reset-password-user-form',
+            'hx-target': 'this',
             'hx-swap': 'outerHTML',
         }
-        self.helper.add_input(Submit('submit', 'Отправить'))
+        self.helper.add_input(Submit(name='submit',
+                                     value='Отправить письмо'))
 
 
 class MyCustomChangePasswordForm(ChangePasswordForm):
@@ -99,7 +121,8 @@ class MyCustomChangePasswordForm(ChangePasswordForm):
             'hx-target': '#modal-form',
             'hx-swap': 'innerHTML',
         }
-        self.helper.add_input(Submit('submit', 'Отправить'))
+        self.helper.add_input(Submit(name='submit',
+                                     value='Изменить пароль'))
 
 
 class MyCustomResetPasswordKeyForm(ResetPasswordKeyForm):
@@ -110,11 +133,27 @@ class MyCustomResetPasswordKeyForm(ResetPasswordKeyForm):
         self.helper.form_id = 'reset-password-key-user-form'
         self.helper.attrs = {
             'hx-post': '',
-            'hx-target': '#reset-password-key-user-form',
+            'hx-target': 'this',
             'hx-swap': 'outerHTML',
             'hx-select': '#reset-password-key-user-form',
         }
-        self.helper.add_input(Submit('action', 'Отправить'))
+        self.helper.add_input(Submit(name='action',
+                                     value='Сбросить пароль'))
+
+
+class MyCustomSetPasswordForm(SetPasswordForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'set-password-user-form'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('account_set_password'),
+            'hx-target': '#modal-form',
+            'hx-swap': 'innerHTML',
+        }
+        self.helper.add_input(Submit(name='submit',
+                                     value='Установить пароль'))
 
 
 class MyCustomAddEmailForm(AddEmailForm):
@@ -127,22 +166,115 @@ class MyCustomAddEmailForm(AddEmailForm):
             'hx-target': '#modal-form',
             'hx-swap': 'innerHTML',
         }
-        self.helper.add_input(Submit('action_add', 'Отправить'))
+        self.helper.add_input(Submit(name='action_add',
+                                     value='Изменить Email'))
 
 
-class MyCrispyForm(forms.Form):
+class UserUpdateForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'central-col'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('profile_update'),
+            'hx-target': 'this',
+            'hx-swap': 'outerHTML',
+            'hx-select': '#central-col'
+        }
+        self.helper.add_input(Submit(name='submit',
+                                     value='Изменить'))
+
+        self.helper.add_input(Button(name='button',
+                                     value='Отмена',
+                                     css_class='btn',
+                                     hx_get=reverse_lazy('profile_htmx'),
+                                     hx_target="#central-col",
+                                     hx_select="#central-col",
+                                     hx_swap="outerHTML"))
+
+    class Meta:
+        model = get_user_model()
+        fields = ('username', 'first_name', 'last_name')
+
+
+class CreateOrganizationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Fieldset('', 'email', 'name'),
-            Button('Save', 'save', css_class=' btn-secondary'),
-            ButtonElement('google', 'google',
-                          css_class='btn btn-outline-info',
-                          content="<a href='/accounts/google/login/?next=/' > Google </a>")
-        )
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'central-col'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('organization_create'),
+            'hx-target': 'this',
+            'hx-swap': 'outerHTML',
+        }
+        self.helper.add_input(Submit(name='submit',
+                                     value='Создать'))
 
-    email = EmailField()
-    name = CharField(required=False)
+        self.helper.add_input(Button(name='button',
+                                     value='Отмена',
+                                     css_class='btn',
+                                     hx_get=reverse_lazy('organization_profile'),
+                                     hx_target='#central-col',
+                                     hx_swap="innerHTML"))
+
+    category = forms.ModelChoiceField(label='Категория',
+                                      queryset=Categories.objects.all(),
+                                      widget=forms.RadioSelect)
+
+    def save(self, commit=True):
+        if self.errors:
+            raise ValueError(
+                "The %s could not be %s because the data didn't validate."
+                % (
+                    self.instance._meta.object_name,
+                    "created" if self.instance._state.adding else "changed",
+                )
+            )
+        if commit:
+            # If committing, save the instance and the m2m data immediately.
+            self.instance.save(user=self.initial['user'])
+
+    class Meta:
+        model = Organizations
+        fields = ('name', 'category')
+
+
+class OrganizationUpdateForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'central-col'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('organization_update'),
+            'hx-target': 'this',
+            'hx-swap': 'outerHTML',
+        }
+        self.helper.add_input(Submit(name='submit',
+                                     value='Изменить'))
+
+        self.helper.add_input(Button(name='button',
+                                     value='Отмена',
+                                     css_class='btn',
+                                     hx_get=reverse_lazy('organization_profile'),
+                                     hx_target="#central-col",
+                                     hx_swap="innerHTML"))
+
+    def save(self, commit=True):
+        if self.errors:
+            raise ValueError(
+                "The %s could not be %s because the data didn't validate."
+                % (
+                    self.instance._meta.object_name,
+                    "created" if self.instance._state.adding else "changed",
+                )
+            )
+        if commit:
+            # If committing, save the instance and the m2m data immediately.
+            self.instance.save(user=self.initial['user'])
+
+    class Meta:
+        model = Organizations
+        fields = ('name', 'category')
+
 

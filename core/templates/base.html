@@ -1,6 +1,4 @@
 {% load static %}
-{% load crispy_forms_tags %}
-{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,7 +26,8 @@
         <div class="d-flex flex-row-reverse bd-highlight" id="parent-div">
             <ul class="navbar-nav"
                 hx-get="{% url 'nav_update' %}"
-                hx-trigger="updateNav from:body">
+                hx-trigger="updateNav from:body"
+                hx-headers='{"trigger": "updateNav"}'>
                 {% if user.is_authenticated %}
                     {% block profile_nav_bar %}
 
@@ -47,39 +46,45 @@
 </nav>
 
 {% block modal %}
-<!-- Модальное окно регистрации пользователя-->
-<div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable" >
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Аутентификация</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-            </div>
-            <div class="modal-body" id="modal-form">
+    <!-- Модальное окно регистрации пользователя-->
+    <div class="modal fade" id="modal-window-auth" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modal-window-auth-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable" id="modalTarget">
+            <div class="modal-content">
+                <div class="modal-body" id="modal-form">
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock modal %}
 
 <div class="container-fluid" id="container">
-    <div class="row">
+    <div class="row"
+         id="row-main"
+         hx-get="{% url 'clean_profile' %}"
+         hx-trigger="CleanProfile from:body">
+        {% block row_main %}
         <!--Левая колонка-->
         <div class="col-2 ">
-            <div class="p-3"></div>
+            <div class="p-3">
+                {% block left_col %}
+                {% endblock left_col %}
+            </div>
         </div>
         <!--Центральная колонка-->
         <div class="col-8 px-5">
-            <div id="central-col"
-                 hx-get="{% url 'clean_profile' %}"
-                 hx-trigger="CleanProfile from:body">
-                {% block profile_info %} {% endblock profile_info %}
+            <div id="central-col" class="pt-5">
+                {% block profile_info %}
+                {% endblock profile_info %}
             </div>
         </div>
         <!--Правая колонка-->
         <div class="col-2">
-            <div class="p-3"></div>
+            <div class="p-3">
+                {% block right_col %}
+                {% endblock right_col %}
+            </div>
         </div>
+        {% endblock row_main %}
     </div>
 </div>
 

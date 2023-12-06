@@ -1,0 +1,10 @@
+{% load allauth socialaccount %}
+{% get_providers as socialaccount_providers %}
+
+{% if socialaccount_providers %}
+    <button class="btn btn-outline-info"
+            hx-get="{% provider_login_url 'google' process=process next='/' %}"
+            hx-target="#modal-form"
+            hx-swap="innerHTML"> Google
+    </button>
+{% endif %}

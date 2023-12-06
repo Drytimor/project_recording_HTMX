@@ -45,8 +45,8 @@ INSTALLED_APPS = [
 
     'core',
     'crispy_forms',
-    'crispy_forms_foundation',
     'crispy_bootstrap5',
+    'crispy_forms_foundation',
     'django_extensions',
     'allauth',
     'allauth.account',
@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 ]
 
-SITE_ID = 1
+SITE_ID = 2
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -77,12 +77,14 @@ LOGIN_REDIRECT_URL = '/auth_redirect/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/logout_redirect/'
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/profile/'
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+SOCIALACCOUNT_ADAPTER = 'core.adapter.MyCustomSocialAccountAdapter'
 
 ACCOUNT_FORMS = {
     'signup': 'core.forms.MyCustomSignupForm',
     'login': 'core.forms.MyCustomLoginFrom',
     'reset_password': 'core.forms.MyCustomResetPasswordForm',
     'change_password': 'core.forms.MyCustomChangePasswordForm',
+    'set_password': 'core.forms.MyCustomSetPasswordForm',
     'add_email': 'core.forms.MyCustomAddEmailForm',
     'reset_password_from_key': 'core.forms.MyCustomResetPasswordKeyForm',
     }
@@ -96,13 +98,11 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         },
-        'APP': {
-            'client_id': os.environ['GOOGLE_OAUTH_CLIENT_ID'],
-            'secret': os.environ['GOOGLE_OAUTH_SECRET'],
-        },
-        'EMAIL_AUTHENTICATION': True
+        'EMAIL_AUTHENTICATION': True,
+        'OAUTH_PKCE_ENABLED': True,
     }
 }
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -145,6 +145,18 @@ DATABASES = {
         "PORT": "5432",
     }
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            'db': '1',
+        }
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 AUTH_USER_MODEL = 'core.User'
 
@@ -199,4 +211,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
-from crispy_forms_foundation.settings import *
