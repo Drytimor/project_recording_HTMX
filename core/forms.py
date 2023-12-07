@@ -276,5 +276,8 @@ class OrganizationUpdateForm(forms.ModelForm):
     class Meta:
         model = Organizations
         fields = ('name', 'category')
+        widgets = {
+            'category': forms.RadioSelect
+        }
 
 

@@ -30,7 +30,7 @@ class Organizations(models.Model):
     category = models.ForeignKey('categories',
                                  verbose_name='Категория',
                                  on_delete=models.SET_NULL,
-                                 related_name='organizations',
+                                 related_name='categories',
                                  null=True)
 
     def save(self, *args, **kwargs):
@@ -66,3 +66,65 @@ class Categories(models.Model):
             models.CheckConstraint(check=Q(name__in=CategoriesChoices.values),
                                    name=f"check_{db_table}")
         ]
+
+
+class Employees(models.Model):
+
+    organization = models.ForeignKey('organizations',
+                                     on_delete=models.CASCADE,
+                                     related_name='employees')
+    name = models.CharField(max_length=255,
+                            unique=True)
+
+    def __str__(self):
+        return f"{self.name}"
+
+    class Meta:
+        db_table = 'employees'
+
+
+class Events(models.Model):
+
+    organization = models.ForeignKey('organizations',
+                                     on_delete=models.CASCADE,
+                                     related_name='events')
+    name = models.CharField(verbose_name='Название',
+                            max_length=250,
+                            unique=True)
+
+    employees = models.ManyToManyField('employees',
+                                       related_name='events')
+
+    class Meta:
+        db_table = 'events'
+
+
+class StatusRecordingChoices(models.TextChoices):
+    PAID = "paid", "оплачено"
+    CANCELED = "canc", "отменено"
+
+
+class Recordings(models.Model):
+
+    event = models.ForeignKey('events',
+                              on_delete=models.CASCADE,
+                              related_name='recordings')
+
+    user = models.ForeignKey(AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='recordings')
+
+    status_recording = models.CharField(max_length=4,
+                                        choices=StatusRecordingChoices.choices)
+
+    date_recording = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'recordings'
+        constraints = [
+            models.UniqueConstraint(fields=['event', 'customer'],
+                                    name=f"unique_{db_table}_customer")
+        ]
+
+
+

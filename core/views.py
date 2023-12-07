@@ -140,7 +140,7 @@ organization_create = CreateOrganization.as_view()
 class OrganizationProfile(DetailView):
 
     model = Organizations
-    queryset = Organizations.objects.select_related('category')
+    queryset = Organizations.objects.select_related('categories')
     template_name = 'profile_organization.html'
 
     def get_object(self, queryset=None):
@@ -161,7 +161,7 @@ organization_profile = OrganizationProfile.as_view()
 class OrganizationUpdate(UpdateView):
 
     form_class = OrganizationUpdateForm
-    queryset = Organizations.objects.select_related('category')
+    queryset = Organizations.objects.select_related('categories')
     template_name = 'organization_create.html'
 
     def get_form_kwargs(self):
