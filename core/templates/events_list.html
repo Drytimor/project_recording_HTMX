@@ -1,0 +1,24 @@
+{% if events %}
+
+    {% for event in events %}
+
+        <div>
+            <div><label>Название</label>: {{ event.name }}</div>
+            <div><label>Сотрудники</label>: {{ event.employees }}</div>
+            <button hx-get="{% url 'event_update' pk=event.id %}" class="btn">
+                    редактировать
+            </button>
+            <button hx-post="{% url 'event_delete' pk=event.id %}" class="btn">
+                    удалить
+            </button>
+        </div>
+
+    {% endfor %}
+
+{% endif %}
+
+<div>
+    <button hx-get="{% url 'event_create' %}" class="btn">
+        добавить мероприятие
+    </button>
+</div>

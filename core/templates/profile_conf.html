@@ -1,19 +1,41 @@
 {% if user.is_authenticated %}
     <div>
-        <p><a hx-get="{% url 'account_email' %}"
-          role="button"
-          hx-target="#central-col">управление почтой</a></p>
+        <button hx-get="{% url 'account_email' %}"
+                hx-target="#central-col"
+                class="btn">
+            почта
+        </button>
     </div>
 
     <div>
-        <p><a hx-get="{% url 'account_change_password' %}"
-          role="button"
-          hx-target="#central-col">изменить пароль</a></p>
+        <button hx-get="{% url 'account_change_password' %}"
+                hx-target="#central-col"
+                class="btn">
+            изменить пароль
+        </button>
     </div>
 
     <div>
-        <p><a hx-get="{% url 'organization_profile' %}"
-          role="button"
-          hx-target="#central-col">Организация</a></p>
+        <button hx-get="{% url 'organization_profile' %}"
+                hx-target="#central-col"
+                class="btn">
+            организация
+        </button>
+    </div>
+
+    <div>
+        <button hx-get="{% url 'employee_profile' %}"
+                hx-target="#central-col"
+                class="btn">
+            сотрудники
+        </button>
+    </div>
+
+    <div>
+        <button hx-get="{% url 'event_profile' %}"
+                hx-target="#central-col"
+                class="btn">
+            мероприятия
+        </button>
     </div>
 {% endif %}

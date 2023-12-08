@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models import Q
-from django.shortcuts import reverse
+from django.db.models import Q, manager
 from allauth_app.settings import AUTH_USER_MODEL
 
 
@@ -30,7 +29,7 @@ class Organizations(models.Model):
     category = models.ForeignKey('categories',
                                  verbose_name='Категория',
                                  on_delete=models.SET_NULL,
-                                 related_name='categories',
+                                 related_name='organizations',
                                  null=True)
 
     def save(self, *args, **kwargs):
@@ -68,24 +67,45 @@ class Categories(models.Model):
         ]
 
 
+class EmployeesManager(models.Manager):
+
+    def get_employees_org(self, org_id):
+        return self.model.objects.filter(organization_id=org_id)
+        # return ' '.join([q.name for q in self.model.objects.filter(organization_id=self.instance.organization_id)])
+
+
 class Employees(models.Model):
 
     organization = models.ForeignKey('organizations',
                                      on_delete=models.CASCADE,
                                      related_name='employees')
-    name = models.CharField(max_length=255,
+    name = models.CharField(verbose_name='Имя',
+                            max_length=255,
                             unique=True)
+
+    objects = EmployeesManager()
 
     def __str__(self):
         return f"{self.name}"
+
+    def save(self, *args, **kwargs):
+        if 'organization' in kwargs:
+            self.organization = kwargs.pop('organization')
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'employees'
 
 
+class EventsManager(models.Manager):
+    def foo(self):
+        return 49
+
+
 class Events(models.Model):
 
     organization = models.ForeignKey('organizations',
+                                     verbose_name='Организация',
                                      on_delete=models.CASCADE,
                                      related_name='events')
     name = models.CharField(verbose_name='Название',
@@ -93,7 +113,15 @@ class Events(models.Model):
                             unique=True)
 
     employees = models.ManyToManyField('employees',
+                                       verbose_name='Сотрудник',
                                        related_name='events')
+
+    objects = EventsManager()
+
+    def save(self, *args, **kwargs):
+        if 'organization' in kwargs:
+            self.organization = kwargs.pop('organization')
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'events'
@@ -107,23 +135,27 @@ class StatusRecordingChoices(models.TextChoices):
 class Recordings(models.Model):
 
     event = models.ForeignKey('events',
+                              verbose_name='Мероприятие',
                               on_delete=models.CASCADE,
                               related_name='recordings')
 
     user = models.ForeignKey(AUTH_USER_MODEL,
+                             verbose_name='Клиент',
                              on_delete=models.CASCADE,
                              related_name='recordings')
 
     status_recording = models.CharField(max_length=4,
+                                        verbose_name='Статус записи',
                                         choices=StatusRecordingChoices.choices)
 
-    date_recording = models.DateTimeField(auto_now=True)
+    date_recording = models.DateTimeField(verbose_name='Дата записи',
+                                          auto_now=True)
 
     class Meta:
         db_table = 'recordings'
         constraints = [
-            models.UniqueConstraint(fields=['event', 'customer'],
-                                    name=f"unique_{db_table}_customer")
+            models.UniqueConstraint(fields=['event', 'user'],
+                                    name=f"unique_{db_table}_user")
         ]
 
 

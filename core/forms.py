@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy, NoReverseMatch
 from django.utils.safestring import mark_safe
 from django import forms
-from .models import Organizations, Categories
+from .models import Organizations, Categories, Events, Employees
 
 
 class MyCustomSignupForm(SignupForm):
@@ -281,3 +281,153 @@ class OrganizationUpdateForm(forms.ModelForm):
         }
 
 
+class CreateEventForm(forms.ModelForm):
+
+    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
+                                               widget=forms.CheckboxSelectMultiple)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._organization = self.initial['organization']
+        self.fields['employees'].queryset = Employees.objects.get_employees_org(self.organization.pk)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'central-col'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('event_create'),
+            'hx-target': 'this',
+            'hx-swap': 'outerHTML',
+        }
+        self.helper.add_input(Submit(name='submit',
+                                     value='Создать'))
+
+        self.helper.add_input(Button(name='button',
+                                     value='Отмена',
+                                     css_class='btn',
+                                     hx_get=reverse_lazy('event_profile'),
+                                     hx_target='#central-col',
+                                     hx_swap="innerHTML"))
+
+    @property
+    def organization(self):
+        return self._organization
+
+    def save(self, commit=True):
+        if self.errors:
+            raise ValueError(
+                "The %s could not be %s because the data didn't validate."
+                % (
+                    self.instance._meta.object_name,
+                    "created" if self.instance._state.adding else "changed",
+                )
+            )
+        if commit:
+            # If committing, save the instance and the m2m data immediately.
+            self.instance.save(organization=self.organization)
+
+    class Meta:
+        model = Events
+        fields = ('name', 'employees')
+
+
+class UpdateEventForm(forms.ModelForm):
+
+    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
+                                               widget=forms.CheckboxSelectMultiple)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._organization_id = self.initial['organization_id']
+        self.fields['employees'].queryset = Employees.objects.get_employees_org(self.organization_id)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'central-col'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('event_update', kwargs={
+                'pk': self.instance.pk
+            }),
+            'hx-target': 'this',
+            'hx-swap': 'outerHTML',
+        }
+        self.helper.add_input(Submit(name='submit',
+                                     value='Изменить'))
+
+        self.helper.add_input(Button(name='button',
+                                     value='Отмена',
+                                     css_class='btn',
+                                     hx_get=reverse_lazy('event_profile'),
+                                     hx_target='#central-col',
+                                     hx_swap="innerHTML"))
+
+    @property
+    def organization_id(self):
+        return self._organization_id
+
+    class Meta:
+        model = Events
+        fields = ('name', 'employees')
+
+
+class CreateEmployeeForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'central-col'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('employee_create'),
+            'hx-target': 'this',
+            'hx-swap': 'outerHTML',
+        }
+        self.helper.add_input(Submit(name='submit',
+                                     value='Создать'))
+
+        self.helper.add_input(Button(name='button',
+                                     value='Отмена',
+                                     css_class='btn',
+                                     hx_get=reverse_lazy('employee_profile'),
+                                     hx_target='#central-col',
+                                     hx_swap="innerHTML"))
+
+    def save(self, commit=True):
+        if self.errors:
+            raise ValueError(
+                "The %s could not be %s because the data didn't validate."
+                % (
+                    self.instance._meta.object_name,
+                    "created" if self.instance._state.adding else "changed",
+                )
+            )
+        if commit:
+            # If committing, save the instance and the m2m data immediately.
+            self.instance.save(organization=self.initial['organization'])
+
+    class Meta:
+        model = Employees
+        fields = ('name',)
+
+
+class UpdateEmployeeForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'central-col'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('employee_update', kwargs={
+                'pk': self.instance.pk
+            }),
+            'hx-target': 'this',
+            'hx-swap': 'outerHTML',
+        }
+        self.helper.add_input(Submit(name='submit',
+                                     value='Изменить'))
+
+        self.helper.add_input(Button(name='button',
+                                     value='Отмена',
+                                     css_class='btn',
+                                     hx_get=reverse_lazy('employee_profile'),
+                                     hx_target='#central-col',
+                                     hx_swap="innerHTML"))
+
+    class Meta:
+        model = Employees
+        fields = ('name',)
