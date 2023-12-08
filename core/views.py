@@ -110,6 +110,7 @@ class CustomSignupView(SignupView):
 signup = CustomSignupView.as_view()
 
 
+# CRUD organization
 class CreateOrganization(CreateView):
 
     model = Organizations
@@ -138,7 +139,6 @@ class CreateOrganization(CreateView):
 organization_create = CreateOrganization.as_view()
 
 
-# CRUD organization
 class OrganizationProfile(DetailView):
 
     model = Organizations

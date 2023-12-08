@@ -8,9 +8,11 @@ from django.urls import reverse_lazy, NoReverseMatch
 from django.utils.safestring import mark_safe
 from django import forms
 from .models import Organizations, Categories, Events, Employees
+from .models import User
 
 
 class MyCustomSignupForm(SignupForm):
+
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
@@ -39,6 +41,14 @@ class MyCustomSignupForm(SignupForm):
                                                                         self.request},
                                                                provider='google',
                                                                next='/')))
+    role = forms.ChoiceField(choices=User.UserRoleChoices.choices,
+                             widget=forms.RadioSelect)
+
+    def save(self, request):
+        user = super(MyCustomSignupForm, self).save(request)
+        user.role = self.cleaned_data['role']
+        user.save()
+        return user
 
 
 class MyCustomLoginFrom(LoginForm):

@@ -1,16 +1,25 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models import Q, manager
+from django.db.models import Q
 from allauth_app.settings import AUTH_USER_MODEL
 
 
 class User(AbstractUser):
+
+    class UserRoleChoices(models.TextChoices):
+        CLIENT = 'client', 'клиент'
+        ORGANIZATION = 'organization', 'организация'
+
     email = models.EmailField(verbose_name='Email',
                               unique=True,
                               help_text='Введите ваш Email',
                               error_messages={
                                   "unique": "такой email адрес уже зарегистрирован"}
                               )
+
+    role = models.CharField(max_length=20,
+                            choices=UserRoleChoices.choices,
+                            default=UserRoleChoices.CLIENT)
 
 
 class Organizations(models.Model):
@@ -21,10 +30,9 @@ class Organizations(models.Model):
 
     name = models.CharField(verbose_name='Название',
                             max_length=255,
-                            unique=True,
                             error_messages={
-                                'unique': 'такая организация уже зарегистрирована'}
-                            )
+                                'unique': 'такая организация уже зарегистрирована'},
+                            blank=True)
 
     category = models.ForeignKey('categories',
                                  verbose_name='Категория',
@@ -32,15 +40,28 @@ class Organizations(models.Model):
                                  related_name='organizations',
                                  null=True)
 
-    def save(self, *args, **kwargs):
-        self.user = kwargs.pop('user')
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return f"{self.name}"
 
     class Meta:
         db_table = 'organizations'
+
+
+class Customers(models.Model):
+
+    user = models.OneToOneField(AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                related_name='customers')
+
+    hobby = models.CharField(verbose_name='увлечения',
+                             max_length=250,
+                             blank=True)
+
+    def __str__(self):
+        return f"{self.__class__.__name__}"
+
+    class Meta:
+        db_table = 'customers'
 
 
 class CategoriesChoices(models.TextChoices):
@@ -54,7 +75,8 @@ class CategoriesChoices(models.TextChoices):
 
 class Categories(models.Model):
     name = models.CharField(max_length=50,
-                            choices=CategoriesChoices.choices)
+                            choices=CategoriesChoices.choices,
+                            default=CategoriesChoices.SUNDRY)
 
     def __str__(self):
         return f"{self.name}"
@@ -76,9 +98,10 @@ class EmployeesManager(models.Manager):
 
 class Employees(models.Model):
 
-    organization = models.ForeignKey('organizations',
-                                     on_delete=models.CASCADE,
-                                     related_name='employees')
+    user = models.ForeignKey(AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='employees')
+
     name = models.CharField(verbose_name='Имя',
                             max_length=255,
                             unique=True)
@@ -88,26 +111,20 @@ class Employees(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-    def save(self, *args, **kwargs):
-        if 'organization' in kwargs:
-            self.organization = kwargs.pop('organization')
-        super().save(*args, **kwargs)
-
     class Meta:
         db_table = 'employees'
 
 
 class EventsManager(models.Manager):
-    def foo(self):
-        return 49
+    pass
 
 
 class Events(models.Model):
 
-    organization = models.ForeignKey('organizations',
-                                     verbose_name='Организация',
-                                     on_delete=models.CASCADE,
-                                     related_name='events')
+    user = models.ForeignKey(AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='events')
+
     name = models.CharField(verbose_name='Название',
                             max_length=250,
                             unique=True)
@@ -118,10 +135,8 @@ class Events(models.Model):
 
     objects = EventsManager()
 
-    def save(self, *args, **kwargs):
-        if 'organization' in kwargs:
-            self.organization = kwargs.pop('organization')
-        super().save(*args, **kwargs)
+    def __str__(self):
+        return f"{self.name}"
 
     class Meta:
         db_table = 'events'
