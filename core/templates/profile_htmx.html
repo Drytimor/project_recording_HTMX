@@ -11,7 +11,7 @@
              hx-target="this"
              hx-swap="innerHTML">
             <div><label>Логин</label>: {{ user.username}}</div>
-            <div><label>Организация</label>: {{ user.organization }}</div>
+            <div><label>Организация</label>: {{ user.organizations }}</div>
             <div><label>Имя</label>: {{ user.first_name}}</div>
             <div><label>Фамилия</label>: {{ user.last_name}}</div>
             <button hx-get="{% url 'profile_update' %}" class="btn">

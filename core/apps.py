@@ -7,6 +7,7 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-        from .signals import create_profile
+        from .signals import create_profile, add_employees_event
         setting_changed.connect(create_profile)
+        setting_changed.connect(add_employees_event)
 

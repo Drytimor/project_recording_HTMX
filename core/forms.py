@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy, NoReverseMatch
 from django.utils.safestring import mark_safe
 from django import forms
-from .models import Organizations, Categories, Events, Employees
+from .models import Events, Employees
 from .models import User
 
 
@@ -207,99 +207,12 @@ class UserUpdateForm(forms.ModelForm):
         fields = ('username', 'first_name', 'last_name')
 
 
-class CreateOrganizationForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_id = 'central-col'
-        self.helper.attrs = {
-            'hx-post': reverse_lazy('organization_create'),
-            'hx-target': 'this',
-            'hx-swap': 'outerHTML',
-        }
-        self.helper.add_input(Submit(name='submit',
-                                     value='Создать'))
-
-        self.helper.add_input(Button(name='button',
-                                     value='Отмена',
-                                     css_class='btn',
-                                     hx_get=reverse_lazy('organization_profile'),
-                                     hx_target='#central-col',
-                                     hx_swap="innerHTML"))
-
-    category = forms.ModelChoiceField(label='Категория',
-                                      queryset=Categories.objects.all(),
-                                      widget=forms.RadioSelect)
-
-    def save(self, commit=True):
-        if self.errors:
-            raise ValueError(
-                "The %s could not be %s because the data didn't validate."
-                % (
-                    self.instance._meta.object_name,
-                    "created" if self.instance._state.adding else "changed",
-                )
-            )
-        if commit:
-            # If committing, save the instance and the m2m data immediately.
-            self.instance.save(user=self.initial['user'])
-
-    class Meta:
-        model = Organizations
-        fields = ('name', 'category')
-
-
-class OrganizationUpdateForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_id = 'central-col'
-        self.helper.attrs = {
-            'hx-post': reverse_lazy('organization_update'),
-            'hx-target': 'this',
-            'hx-swap': 'outerHTML',
-        }
-        self.helper.add_input(Submit(name='submit',
-                                     value='Изменить'))
-
-        self.helper.add_input(Button(name='button',
-                                     value='Отмена',
-                                     css_class='btn',
-                                     hx_get=reverse_lazy('organization_profile'),
-                                     hx_target="#central-col",
-                                     hx_swap="innerHTML"))
-
-    def save(self, commit=True):
-        if self.errors:
-            raise ValueError(
-                "The %s could not be %s because the data didn't validate."
-                % (
-                    self.instance._meta.object_name,
-                    "created" if self.instance._state.adding else "changed",
-                )
-            )
-        if commit:
-            # If committing, save the instance and the m2m data immediately.
-            self.instance.save(user=self.initial['user'])
-
-    class Meta:
-        model = Organizations
-        fields = ('name', 'category')
-        widgets = {
-            'category': forms.RadioSelect
-        }
-
-
 class CreateEventForm(forms.ModelForm):
 
-    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
-                                               widget=forms.CheckboxSelectMultiple)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._organization = self.initial['organization']
-        self.fields['employees'].queryset = Employees.objects.get_employees_org(self.organization.pk)
+        self._user = self.initial['user']
+        self.fields['employees'].queryset = Employees.objects.get_employees_user(user_id=self.user.pk)
         self.helper = FormHelper(self)
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
@@ -317,9 +230,12 @@ class CreateEventForm(forms.ModelForm):
                                      hx_target='#central-col',
                                      hx_swap="innerHTML"))
 
+    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
+                                               widget=forms.CheckboxSelectMultiple)
+
     @property
-    def organization(self):
-        return self._organization
+    def user(self):
+        return self._user
 
     def save(self, commit=True):
         if self.errors:
@@ -332,7 +248,7 @@ class CreateEventForm(forms.ModelForm):
             )
         if commit:
             # If committing, save the instance and the m2m data immediately.
-            self.instance.save(organization=self.organization)
+            self.instance.save(user=self.user, employees=self.cleaned_data['employees'])
 
     class Meta:
         model = Events
@@ -341,13 +257,10 @@ class CreateEventForm(forms.ModelForm):
 
 class UpdateEventForm(forms.ModelForm):
 
-    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
-                                               widget=forms.CheckboxSelectMultiple)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._organization_id = self.initial['organization_id']
-        self.fields['employees'].queryset = Employees.objects.get_employees_org(self.organization_id)
+        self._user_id = self.initial['user_id']
+        self.fields['employees'].queryset = Employees.objects.get_employees_user(user_id=self.user_id)
         self.helper = FormHelper(self)
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
@@ -367,9 +280,12 @@ class UpdateEventForm(forms.ModelForm):
                                      hx_target='#central-col',
                                      hx_swap="innerHTML"))
 
+    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
+                                               widget=forms.CheckboxSelectMultiple)
+
     @property
-    def organization_id(self):
-        return self._organization_id
+    def user_id(self):
+        return self._user_id
 
     class Meta:
         model = Events
@@ -408,7 +324,7 @@ class CreateEmployeeForm(forms.ModelForm):
             )
         if commit:
             # If committing, save the instance and the m2m data immediately.
-            self.instance.save(organization=self.initial['organization'])
+            self.instance.save(user=self.initial['user'])
 
     class Meta:
         model = Employees

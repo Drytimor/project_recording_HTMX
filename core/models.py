@@ -91,8 +91,8 @@ class Categories(models.Model):
 
 class EmployeesManager(models.Manager):
 
-    def get_employees_org(self, org_id):
-        return self.model.objects.filter(organization_id=org_id)
+    def get_employees_user(self, user_id):
+        return self.model.objects.filter(user_id=user_id)
         # return ' '.join([q.name for q in self.model.objects.filter(organization_id=self.instance.organization_id)])
 
 
@@ -110,6 +110,11 @@ class Employees(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    def save(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'employees'
@@ -137,6 +142,12 @@ class Events(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    def save(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+            self.employees_queryset = kwargs.pop('employees')
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'events'

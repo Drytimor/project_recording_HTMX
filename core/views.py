@@ -3,7 +3,7 @@ from django.shortcuts import render, reverse, redirect
 from django.views.generic import TemplateView, View, UpdateView, CreateView, DetailView, DeleteView, ListView
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import ContextMixin
-from .forms import UserUpdateForm, CreateOrganizationForm, OrganizationUpdateForm, CreateEmployeeForm, \
+from .forms import UserUpdateForm, CreateEmployeeForm, \
     UpdateEmployeeForm, CreateEventForm, UpdateEventForm
 from .models import User, Organizations, Employees, Events
 from django.template import loader
@@ -49,6 +49,29 @@ class Logout(View):
         return HttpResponse(headers={'HX-Trigger': 'CleanProfile, updateNav'})
 
 
+class PasswordResetFromKeyDoneView(View):
+
+    def get(self, request,  *args, **kwargs):
+        template = loader.get_template('account/password_reset_from_key_done.html')
+        return HttpResponse(template.render(request=request),
+                            headers={'HX-Trigger': 'updateNav',
+                                     'HX-Replace-Url': '/'})
+
+
+password_reset_from_key_done = PasswordResetFromKeyDoneView.as_view()
+
+
+class CustomSignupView(SignupView):
+
+    def get_form_kwargs(self):
+        kwargs = super(CustomSignupView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
+
+signup = CustomSignupView.as_view()
+
+
 class Profile(View):
 
     def get(self, request, *args, **kwargs):
@@ -87,124 +110,7 @@ class ProfileUpdate(UpdateView):
         return reverse('profile_htmx')
 
 
-class PasswordResetFromKeyDoneView(View):
 
-    def get(self, request,  *args, **kwargs):
-        template = loader.get_template('account/password_reset_from_key_done.html')
-        return HttpResponse(template.render(request=request),
-                            headers={'HX-Trigger': 'updateNav',
-                                     'HX-Replace-Url': '/'})
-
-
-password_reset_from_key_done = PasswordResetFromKeyDoneView.as_view()
-
-
-class CustomSignupView(SignupView):
-
-    def get_form_kwargs(self):
-        kwargs = super(CustomSignupView, self).get_form_kwargs()
-        kwargs['request'] = self.request
-        return kwargs
-
-
-signup = CustomSignupView.as_view()
-
-
-# CRUD organization
-class CreateOrganization(CreateView):
-
-    model = Organizations
-    template_name = 'organization_create.html'
-    form_class = CreateOrganizationForm
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['initial'].update({'user': self.request.user})
-        return kwargs
-
-    def form_valid(self, form):
-        self.object = form.save()
-        return HttpResponseRedirect(self.get_success_url())
-
-    def form_invalid(self, form):
-        ctx = {}
-        ctx.update(csrf(self.request))
-        form_crispy = render_crispy_form(form, context=ctx)
-        return HttpResponse(form_crispy)
-
-    def get_success_url(self):
-        return reverse('organization_profile')
-
-
-organization_create = CreateOrganization.as_view()
-
-
-class OrganizationProfile(DetailView):
-
-    model = Organizations
-    queryset = Organizations.objects.select_related('category')
-    template_name = 'profile_organization.html'
-
-    def get_object(self, queryset=None):
-        user = self.request.user.id
-        if user is not None:
-            queryset = self.queryset.filter(user_id=user)
-        try:
-            obj = queryset.get()
-        except queryset.model.DoesNotExist:
-            pass
-        else:
-            return obj
-
-
-organization_profile = OrganizationProfile.as_view()
-
-
-class OrganizationUpdate(UpdateView):
-
-    form_class = OrganizationUpdateForm
-    queryset = Organizations.objects.select_related('category')
-    template_name = 'organization_create.html'
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['initial'].update({'user': self.request.user})
-        return kwargs
-
-    def form_invalid(self, form):
-        ctx = {}
-        ctx.update(csrf(self.request))
-        form_crispy = render_crispy_form(form, context=ctx)
-        return HttpResponse(form_crispy)
-
-    def get_object(self, queryset=None):
-        user = self.request.user.id
-        queryset = self.queryset.filter(user_id=user)
-        obj = queryset.get()
-        return obj
-
-    def get_success_url(self):
-        return reverse('organization_profile')
-
-
-organization_update = OrganizationUpdate.as_view()
-
-
-class OrganizationDelete(DeleteView):
-
-    queryset = Organizations.objects.all()
-
-    def get_object(self, queryset=None):
-        user = self.request.user.id
-        queryset = self.queryset.filter(user_id=user)
-        obj = queryset.get()
-        return obj
-
-    def get_success_url(self):
-        return reverse('organization_profile')
-
-
-organization_delete = OrganizationDelete.as_view()
 
 
 # CRUD Employee
@@ -213,15 +119,9 @@ class EmployeeCreate(CreateView):
     form_class = CreateEmployeeForm
     template_name = 'employee_form.html'
 
-    def get_object(self, queryset=None):
-        user = self.request.user.pk
-        queryset = Organizations.objects.filter(user_id=user)
-        obj = queryset.get()
-        return obj
-
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['initial'].update({'organization': self.get_object()})
+        kwargs['initial'].update({'user': self.request.user})
         return kwargs
 
     def form_valid(self, form):
@@ -248,7 +148,7 @@ class EmployeeProfile(ListView):
 
     def get_queryset(self):
         user = self.request.user.pk
-        queryset = Employees.objects.filter(organization__user__id=user)
+        queryset = Employees.objects.filter(user_id=user)
         return queryset.all()
 
 
@@ -286,15 +186,9 @@ class EventsCreate(CreateView):
     form_class = CreateEventForm
     context_object_name = 'events'
 
-    def get_object(self, queryset=None):
-        user = self.request.user.pk
-        queryset = Organizations.objects.filter(user_id=user)
-        obj = queryset.get()
-        return obj
-
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['initial'].update({'organization': self.get_object()})
+        kwargs['initial'].update({'user': self.request.user})
         return kwargs
 
     def form_valid(self, form):
@@ -321,7 +215,7 @@ class EventsProfile(ListView):
 
     def get_queryset(self):
         user = self.request.user.pk
-        queryset = Events.objects.filter(organization__user__id=user)
+        queryset = Events.objects.filter(user_id=user)
         return queryset.all()
 
 
@@ -337,7 +231,7 @@ class EventsUpdate(UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['initial'].update({
-            'organization_id': self.get_object().organization_id
+            'user_id': self.request.user.pk
         })
         return kwargs
 

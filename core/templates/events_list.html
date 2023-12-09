@@ -4,7 +4,7 @@
 
         <div>
             <div><label>Название</label>: {{ event.name }}</div>
-            <div><label>Сотрудники</label>: {{ event.employees }}</div>
+            <div><label>Сотрудники</label>: {{ event.employees.all }}</div>
             <button hx-get="{% url 'event_update' pk=event.id %}" class="btn">
                     редактировать
             </button>
