@@ -1,25 +1,27 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from core.models import User, Organizations, Customers, Events
+from core.models import Events, Organizations
 
 
-@receiver(post_save, sender=User)
-def create_profile(sender, instance, created, **kwargs):
-    if instance.role == 'client':
-        if created:
-            Customers.objects.create(user=instance)
-        else:
-            Customers.objects.save()
-    else:
-        if created:
-            Organizations.objects.create(user=instance)
-        else:
-            instance.organizations.save()
+# @receiver(post_save, sender=Events)
+# def add_employees_event(sender, instance, created, **kwargs):
+#     if created:
+#         for employee in instance.employees_queryset:
+#             instance.employees.add(employee)
 
 
-@receiver(post_save, sender=Events)
-def add_employees_event(sender, instance, created, **kwargs):
-    if created:
-        for employee in instance.employees_queryset:
-            instance.employees.add(employee)
+# @receiver(post_save, sender=Organizations)
+# def created_organization_user(sender, instance, **kwargs):
+#     instance.user.organization_created = True
+#     instance.user.save(update_fields=['organization_created'])
+
+
+# @receiver(post_delete, sender=Organizations)
+# def custom_cascade_delete_organization(sender, instance, **kwargs):
+#     instance.user.employees.all().delete()
+#     instance.user.events.all().delete()
+#     instance.user.organization_created = False
+#     instance.user.save(update_fields=['organization_created'])
+
+
 

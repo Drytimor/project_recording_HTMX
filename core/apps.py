@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from django.core.signals import setting_changed
 
 
 class CoreConfig(AppConfig):
@@ -7,7 +6,6 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-        from .signals import create_profile, add_employees_event
-        setting_changed.connect(create_profile)
-        setting_changed.connect(add_employees_event)
+        from . import signals
+        # from .signals import add_employees_event
 

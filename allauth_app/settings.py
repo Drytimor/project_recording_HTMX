@@ -77,7 +77,7 @@ LOGIN_REDIRECT_URL = '/auth_redirect/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/logout_redirect/'
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/profile/'
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
-SOCIALACCOUNT_ADAPTER = 'core.adapter.MyCustomSocialAccountAdapter'
+ACCOUNT_ADAPTER = 'core.adapter.MyCustomAccountAdapter'
 
 ACCOUNT_FORMS = {
     'signup': 'core.forms.MyCustomSignupForm',
@@ -121,7 +121,7 @@ ROOT_URLCONF = 'allauth_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'allauth_app/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

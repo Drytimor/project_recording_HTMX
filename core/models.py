@@ -1,14 +1,10 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
 from django.db.models import Q
 from allauth_app.settings import AUTH_USER_MODEL
 
 
 class User(AbstractUser):
-
-    class UserRoleChoices(models.TextChoices):
-        CLIENT = 'client', 'клиент'
-        ORGANIZATION = 'organization', 'организация'
 
     email = models.EmailField(verbose_name='Email',
                               unique=True,
@@ -17,9 +13,8 @@ class User(AbstractUser):
                                   "unique": "такой email адрес уже зарегистрирован"}
                               )
 
-    role = models.CharField(max_length=20,
-                            choices=UserRoleChoices.choices,
-                            default=UserRoleChoices.CLIENT)
+    is_organization = models.BooleanField(default=False)
+    organization_created = models.BooleanField(default=False)
 
 
 class Organizations(models.Model):
@@ -43,25 +38,22 @@ class Organizations(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    def save(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+            self.user.organization_created = True
+            self.user.save(update_fields=['organization_created'])
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self.user.employees.all().delete()
+        self.user.events.all().delete()
+        self.user.organization_created = False
+        self.user.save(update_fields=['organization_created'])
+        super().delete(*args, **kwargs)
+
     class Meta:
         db_table = 'organizations'
-
-
-class Customers(models.Model):
-
-    user = models.OneToOneField(AUTH_USER_MODEL,
-                                on_delete=models.CASCADE,
-                                related_name='customers')
-
-    hobby = models.CharField(verbose_name='увлечения',
-                             max_length=250,
-                             blank=True)
-
-    def __str__(self):
-        return f"{self.__class__.__name__}"
-
-    class Meta:
-        db_table = 'customers'
 
 
 class CategoriesChoices(models.TextChoices):
@@ -90,10 +82,7 @@ class Categories(models.Model):
 
 
 class EmployeesManager(models.Manager):
-
-    def get_employees_user(self, user_id):
-        return self.model.objects.filter(user_id=user_id)
-        # return ' '.join([q.name for q in self.model.objects.filter(organization_id=self.instance.organization_id)])
+    pass
 
 
 class Employees(models.Model):
@@ -111,10 +100,10 @@ class Employees(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-    def save(self, *args, **kwargs):
-        if 'user' in kwargs:
-            self.user = kwargs.pop('user')
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if 'user' in kwargs:
+    #         self.user = kwargs.pop('user')
+    #     super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'employees'
@@ -143,11 +132,11 @@ class Events(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-    def save(self, *args, **kwargs):
-        if 'user' in kwargs:
-            self.user = kwargs.pop('user')
-            self.employees_queryset = kwargs.pop('employees')
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if 'user' in kwargs:
+    #         self.user = kwargs.pop('user')
+    #         self.employees_queryset = kwargs.pop('employees')
+    #     super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'events'

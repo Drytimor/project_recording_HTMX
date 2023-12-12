@@ -16,6 +16,26 @@
     </div>
 
     <div>
+        <button hx-post="{% url 'profile_delete' pk=user.id %}"
+                class="btn"
+                hx-target="#row-main"
+                hx-swap="innerHTML">
+            удалить профиль
+        </button>
+    </div>
+{% endif %}
+
+{% if user.is_organization %}
+
+    <div>
+        <button hx-get="{% url 'organization_profile' %}"
+                hx-target="#central-col"
+                class="btn">
+            организация
+        </button>
+    </div>
+
+    <div>
         <button hx-get="{% url 'employee_profile' %}"
                 hx-target="#central-col"
                 class="btn">
@@ -30,4 +50,5 @@
             мероприятия
         </button>
     </div>
+
 {% endif %}

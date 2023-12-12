@@ -4,7 +4,11 @@
 
         <div>
             <div><label>Название</label>: {{ event.name }}</div>
-            <div><label>Сотрудники</label>: {{ event.employees.all }}</div>
+            <div><label>Сотрудники</label>:
+                {% for employees_name in event.employees__name %}
+                    {{ employees_name | default:'not'}}
+                {% endfor %}
+            </div>
             <button hx-get="{% url 'event_update' pk=event.id %}" class="btn">
                     редактировать
             </button>
