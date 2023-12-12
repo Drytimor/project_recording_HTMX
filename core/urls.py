@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import Home, UpdateNav, CleanProfile, AuthRedirect, Logout, Profile, ProfileUpdate, ProfileHTMX, \
-    organization_create, organization_profile, organization_update, organization_delete, events_create, events_profile, \
-    events_update, events_delete, employee_create, employee_profile, employee_update, employee_delete
+from .views import (Home, UpdateNav, CleanProfile, AuthRedirect, Logout, Profile, ProfileUpdate, ProfileHTMX,
+                    events_create, events_profile, events_update, events_delete, employee_create, employee_profile,
+                    employee_update, employee_delete, organization_profile, organization_update, profile_delete,
+                    organization_create, organization_delete, signup, password_reset_from_key_done)
 
 urlpatterns = [
     path('', Home.as_view(), name='home'),
@@ -9,14 +10,23 @@ urlpatterns = [
     path('clean_profile/', CleanProfile.as_view(), name='clean_profile'),
     path('auth_redirect/', AuthRedirect.as_view(), name='auth_redirect'),
     path('logout_redirect/', Logout.as_view(), name='logout_redirect'),
+
+    path('accounts/signup/', signup,  # переопределение allauth.account.views
+         name='account_signup'),  # SignupView
+
+    path('accounts/password/reset/key/done/',  # переопределение allauth.account.views
+         password_reset_from_key_done,  # PasswordResetFromKeyDoneView
+         name='account_reset_password_from_key_done'),
+
     path('profile/', Profile.as_view(), name='profile'),
-    path('profile_update/', ProfileUpdate.as_view(), name='profile_update'),
+    path('profile_update/<int:pk>/', ProfileUpdate.as_view(), name='profile_update'),
+    path('profile_delete/<int:pk>', profile_delete, name='profile_delete'),
     path('profile_htmx/', ProfileHTMX.as_view(), name='profile_htmx'),
 
     path('organization_create/', organization_create, name='organization_create'),
     path('organization_profile/', organization_profile, name='organization_profile'),
-    path('organization_update/', organization_update, name='organization_update'),
-    path('organization_delete/', organization_delete, name='organization_delete'),
+    path('organization_update/<int:pk>/', organization_update, name='organization_update'),
+    path('organization_delete/<int:pk>/', organization_delete, name='organization_delete'),
 
     path('event_create/', events_create, name='event_create'),
     path('event_profile/', events_profile, name='event_profile'),

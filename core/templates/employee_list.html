@@ -13,8 +13,13 @@
     {% endfor %}
 
 {% endif %}
+
 <div>
     <button hx-get="{% url 'employee_create' %}" class="btn">
         добавить сотрудника
     </button>
 </div>
+
+{% if error %}
+    {{ error }}
+{% endif%}

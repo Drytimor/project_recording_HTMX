@@ -1,5 +1,8 @@
+from allauth.account.adapter import get_adapter
 from allauth.account.forms import (SignupForm, LoginForm, ResetPasswordForm, ChangePasswordForm, AddEmailForm,
                                    ResetPasswordKeyForm, SetPasswordForm)
+from allauth.account.models import EmailAddress
+from allauth.account.utils import setup_user_email
 from allauth.socialaccount.templatetags.socialaccount import provider_login_url
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Button
@@ -7,8 +10,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy, NoReverseMatch
 from django.utils.safestring import mark_safe
 from django import forms
-from .models import Organizations, Categories, Events, Employees
-from .models import User
+from .models import Events, Employees, Organizations, Categories
 
 
 class MyCustomSignupForm(SignupForm):
@@ -41,13 +43,19 @@ class MyCustomSignupForm(SignupForm):
                                                                         self.request},
                                                                provider='google',
                                                                next='/')))
-    role = forms.ChoiceField(choices=User.UserRoleChoices.choices,
-                             widget=forms.RadioSelect)
+    is_organization = forms.BooleanField(label='Организация',
+                                         required=False)
 
     def save(self, request):
-        user = super(MyCustomSignupForm, self).save(request)
-        user.role = self.cleaned_data['role']
-        user.save()
+        email = self.cleaned_data.get("email")
+        if self.account_already_exists:
+            raise ValueError(email)
+        adapter = get_adapter()
+        user = adapter.new_user(request)
+        user.is_organization = self.cleaned_data['is_organization']  # присоединение роли
+        adapter.save_user(request, user, self)
+        self.custom_signup(request, user)
+        setup_user_email(request, user, [EmailAddress(email=email)] if email else [])
         return user
 
 
@@ -186,7 +194,9 @@ class UserUpdateForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
-            'hx-post': reverse_lazy('profile_update'),
+            'hx-post': reverse_lazy('profile_update', kwargs={
+                'pk': self.instance.pk
+            }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
             'hx-select': '#central-col'
@@ -212,6 +222,7 @@ class CreateOrganizationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self._user = self.initial['user']
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
             'hx-post': reverse_lazy('organization_create'),
@@ -232,18 +243,13 @@ class CreateOrganizationForm(forms.ModelForm):
                                       queryset=Categories.objects.all(),
                                       widget=forms.RadioSelect)
 
+    @property
+    def user(self):
+        return self._user
+
     def save(self, commit=True):
-        if self.errors:
-            raise ValueError(
-                "The %s could not be %s because the data didn't validate."
-                % (
-                    self.instance._meta.object_name,
-                    "created" if self.instance._state.adding else "changed",
-                )
-            )
-        if commit:
-            # If committing, save the instance and the m2m data immediately.
-            self.instance.save(user=self.initial['user'])
+        self.instance = super().save(commit=False)
+        self.instance.save(user=self.user)
 
     class Meta:
         model = Organizations
@@ -256,7 +262,9 @@ class OrganizationUpdateForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
-            'hx-post': reverse_lazy('organization_update'),
+            'hx-post': reverse_lazy('organization_update', kwargs={
+                'pk': self.instance.pk
+            }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
         }
@@ -270,19 +278,6 @@ class OrganizationUpdateForm(forms.ModelForm):
                                      hx_target="#central-col",
                                      hx_swap="innerHTML"))
 
-    def save(self, commit=True):
-        if self.errors:
-            raise ValueError(
-                "The %s could not be %s because the data didn't validate."
-                % (
-                    self.instance._meta.object_name,
-                    "created" if self.instance._state.adding else "changed",
-                )
-            )
-        if commit:
-            # If committing, save the instance and the m2m data immediately.
-            self.instance.save(user=self.initial['user'])
-
     class Meta:
         model = Organizations
         fields = ('name', 'category')
@@ -293,13 +288,10 @@ class OrganizationUpdateForm(forms.ModelForm):
 
 class CreateEventForm(forms.ModelForm):
 
-    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
-                                               widget=forms.CheckboxSelectMultiple)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._organization = self.initial['organization']
-        self.fields['employees'].queryset = Employees.objects.get_employees_org(self.organization.pk)
+        self._user = self.initial['user']
+        self.fields['employees'].queryset = self.user.employees.all()
         self.helper = FormHelper(self)
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
@@ -317,22 +309,20 @@ class CreateEventForm(forms.ModelForm):
                                      hx_target='#central-col',
                                      hx_swap="innerHTML"))
 
+    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
+                                               widget=forms.CheckboxSelectMultiple)
+
     @property
-    def organization(self):
-        return self._organization
+    def user(self):
+        return self._user
 
     def save(self, commit=True):
-        if self.errors:
-            raise ValueError(
-                "The %s could not be %s because the data didn't validate."
-                % (
-                    self.instance._meta.object_name,
-                    "created" if self.instance._state.adding else "changed",
-                )
-            )
-        if commit:
-            # If committing, save the instance and the m2m data immediately.
-            self.instance.save(organization=self.organization)
+        self.instance = super().save(commit=False)
+        # self.instance.save(user=self.user, employees=self.cleaned_data['employees'])
+        employees = self.cleaned_data['employees']
+        name = self.cleaned_data['name']
+        event = self.user.events.create(name=name)
+        event.employees.set(employees)
 
     class Meta:
         model = Events
@@ -341,13 +331,10 @@ class CreateEventForm(forms.ModelForm):
 
 class UpdateEventForm(forms.ModelForm):
 
-    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
-                                               widget=forms.CheckboxSelectMultiple)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._organization_id = self.initial['organization_id']
-        self.fields['employees'].queryset = Employees.objects.get_employees_org(self.organization_id)
+        self._user = self.initial['user']
+        self.fields['employees'].queryset = self.user.employees.all()
         self.helper = FormHelper(self)
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
@@ -367,9 +354,12 @@ class UpdateEventForm(forms.ModelForm):
                                      hx_target='#central-col',
                                      hx_swap="innerHTML"))
 
+    employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
+                                               widget=forms.CheckboxSelectMultiple)
+
     @property
-    def organization_id(self):
-        return self._organization_id
+    def user(self):
+        return self._user
 
     class Meta:
         model = Events
@@ -381,6 +371,7 @@ class CreateEmployeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self._user = self.initial['user']
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
             'hx-post': reverse_lazy('employee_create'),
@@ -397,18 +388,15 @@ class CreateEmployeeForm(forms.ModelForm):
                                      hx_target='#central-col',
                                      hx_swap="innerHTML"))
 
+    @property
+    def user(self):
+        return self._user
+
     def save(self, commit=True):
-        if self.errors:
-            raise ValueError(
-                "The %s could not be %s because the data didn't validate."
-                % (
-                    self.instance._meta.object_name,
-                    "created" if self.instance._state.adding else "changed",
-                )
-            )
-        if commit:
-            # If committing, save the instance and the m2m data immediately.
-            self.instance.save(organization=self.initial['organization'])
+        self.instance = super().save(commit=False)
+        # self.instance.save(user=self.initial['user'])
+        name = self.cleaned_data['name']
+        self.user.employees.create(name=name)
 
     class Meta:
         model = Employees

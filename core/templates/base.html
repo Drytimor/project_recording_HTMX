@@ -13,7 +13,8 @@
 </head>
 
 <body style="background-color:white">
-
+{% block time %}
+{% endblock  %}
 <!--Верхняя навигационная панель-->
 <nav class=" navbar navbar-expand-lg navbar-dark bg-dark ">
     <div class=" container-fluid ">
@@ -64,7 +65,7 @@
          hx-trigger="CleanProfile from:body">
         {% block row_main %}
         <!--Левая колонка-->
-        <div class="col-2">
+        <div class="col-2 pt-5">
             <div class="p-3">
                 {% block left_col %}
                 {% endblock left_col %}

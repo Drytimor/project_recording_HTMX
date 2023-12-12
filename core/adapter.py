@@ -1,6 +1,6 @@
-from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from allauth.account.adapter import DefaultAccountAdapter
 
 
-class MyCustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+class MyCustomAccountAdapter(DefaultAccountAdapter):
     pass
 

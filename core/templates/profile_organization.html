@@ -1,12 +1,12 @@
-{% if object %}
+{% if organization %}
 
     <div>
-        <div><label>Название</label>: {{ object.name }}</div>
-        <div><label>Категория</label>: {{ object.category }}</div>
-        <button hx-get="{% url 'organization_update' %}" class="btn">
+        <div><label>Название</label>: {{ organization.name }}</div>
+        <div><label>Категория</label>: {{ organization.category }}</div>
+        <button hx-get="{% url 'organization_update' pk=organization.id %}" class="btn">
                 редактировать
         </button>
-        <button hx-post="{% url 'organization_delete' %}" class="btn">
+        <button hx-post="{% url 'organization_delete' pk=organization.id %}" class="btn">
                 удалить
         </button>
     </div>
@@ -20,3 +20,4 @@
     </div>
 
 {% endif %}
+
