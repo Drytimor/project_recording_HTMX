@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
 
     'core',
+    'organization',
     'crispy_forms',
     'crispy_bootstrap5',
     'crispy_forms_foundation',
@@ -203,6 +204,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+    BASE_DIR / "allauth_app/static",
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
