@@ -262,3 +262,4 @@ class EventsDelete(DeleteView):
 
 
 events_delete = EventsDelete.as_view()
+

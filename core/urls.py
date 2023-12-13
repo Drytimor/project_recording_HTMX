@@ -21,8 +21,6 @@ urlpatterns = [
     path('profile_delete/<int:pk>', profile_delete, name='profile_delete'),
     path('profile_htmx/', ProfileHTMX.as_view(), name='profile_htmx'),
 
-    path('organization/', include('organization.urls')),
-    path('event/', include('organization.urls')),
-    path('employee/', include('organization.urls')),
+    path('', include('organization.urls')),
 
 ]
