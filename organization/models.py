@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Q
+
 from allauth_app.settings import AUTH_USER_MODEL
 
 
@@ -23,20 +24,6 @@ class Organizations(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-
-    def save(self, *args, **kwargs):
-        if 'user' in kwargs:
-            self.user = kwargs.pop('user')
-            self.user.organization_created = True
-            self.user.save(update_fields=['organization_created'])
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        self.user.employees.all().delete()
-        self.user.events.all().delete()
-        self.user.organization_created = False
-        self.user.save(update_fields=['organization_created'])
-        super().delete(*args, **kwargs)
 
     class Meta:
         db_table = 'organizations'
@@ -69,9 +56,9 @@ class Categories(models.Model):
 
 class Employees(models.Model):
 
-    user = models.ForeignKey(AUTH_USER_MODEL,
-                             on_delete=models.CASCADE,
-                             related_name='employees')
+    organization = models.ForeignKey('organizations',
+                                     on_delete=models.CASCADE,
+                                     related_name='employees')
 
     name = models.CharField(verbose_name='Имя',
                             max_length=255,
@@ -90,13 +77,12 @@ class EventsManager(models.Manager):
 
 class Events(models.Model):
 
-    user = models.ForeignKey(AUTH_USER_MODEL,
-                             on_delete=models.CASCADE,
-                             related_name='events')
+    organization = models.ForeignKey('organizations',
+                                     on_delete=models.CASCADE,
+                                     related_name='events')
 
     name = models.CharField(verbose_name='Название',
-                            max_length=250,
-                            unique=True)
+                            max_length=250)
 
     employees = models.ManyToManyField('employees',
                                        verbose_name='Сотрудник',
@@ -106,12 +92,6 @@ class Events(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-
-    # def save(self, *args, **kwargs):
-    #     if 'user' in kwargs:
-    #         self.user = kwargs.pop('user')
-    #         self.employees_queryset = kwargs.pop('employees')
-    #     super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'events'

@@ -1,25 +1,27 @@
 {% if employees %}
-
     {% for employee in employees %}
         <p>
             {{ employee.name }}
-            <button hx-get="{% url 'employee_update'  pk=employee.id %}" class="btn">
+            <button hx-get="{% url 'employee_update'  pk=employee.id %}"
+                    hx-target="#org-profile"
+                    class="btn">
                 редактировать
             </button>
-            <button hx-post="{% url 'employee_delete' pk=employee.id %}" class="btn">
+            <button hx-post="{% url 'employee_delete' pk=employee.id %}"
+                    hx-target="#org-profile"
+                    class="btn">
                 удалить
             </button>
         </p>
     {% endfor %}
 
 {% endif %}
+    <div>
+        <button hx-get="{% url 'employee_create' pk=organization_id %}"
+                hx-target="#org-profile"
+                class="btn">
+            добавить сотрудника
+        </button>
+    </div>
 
-<div>
-    <button hx-get="{% url 'employee_create' %}" class="btn">
-        добавить сотрудника
-    </button>
-</div>
 
-{% if error %}
-    {{ error }}
-{% endif%}

@@ -9,12 +9,7 @@ urlpatterns = [
     path('auth_redirect/', AuthRedirect.as_view(), name='auth_redirect'),
     path('logout_redirect/', Logout.as_view(), name='logout_redirect'),
 
-    path('accounts/signup/', signup,  # переопределение allauth.account.views
-         name='account_signup'),  # SignupView
 
-    path('accounts/password/reset/key/done/',  # переопределение allauth.account.views
-         password_reset_from_key_done,  # PasswordResetFromKeyDoneView
-         name='account_reset_password_from_key_done'),
 
     path('profile/', Profile.as_view(), name='profile'),
     path('profile_update/<int:pk>/', ProfileUpdate.as_view(), name='profile_update'),
@@ -24,3 +19,4 @@ urlpatterns = [
     path('', include('organization.urls')),
 
 ]
+

@@ -215,3 +215,5 @@ class UserUpdateForm(forms.ModelForm):
         model = get_user_model()
         fields = ('username', 'first_name', 'last_name')
 
+
+
