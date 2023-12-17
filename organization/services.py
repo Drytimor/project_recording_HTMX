@@ -2,13 +2,16 @@ from django.http import Http404
 from django.utils.translation import gettext as _
 from organization.models import Organizations, Employees, Events
 from organization.todo import db_function
+from django.db import transaction
 
 
+@transaction.atomic
 def create_organization_from_db(user, form, organization_created=True):
     data = form.cleaned_data
+    data['user'] = user
     user.organization_created = organization_created
     user.save(update_fields=['organization_created'])
-    user.organizations.create(**data)
+    Organizations.objects.create(**data)
 
 
 def get_organization_from_db(user=None, organization_id=None):
@@ -26,17 +29,20 @@ def get_organization_from_db(user=None, organization_id=None):
         return Organizations.objects.get(id=organization_id)
 
 
+@transaction.atomic
 def update_organization_in_db(organization, form):
     data = form.cleaned_data
     Organizations.objects.filter(id=organization.pk).update(**data)
 
 
+@transaction.atomic
 def delete_organization_from_db(user, organization_created=False):
     user.organizations.delete()
     user.organization_created = organization_created
     user.save(update_fields=['organization_created'])
 
 
+@transaction.atomic
 def create_employee_in_db(organization_id, form):
     data = form.cleaned_data
     data['organization_id'] = organization_id
@@ -52,6 +58,7 @@ def get_employees_from_db(organization_id=None, employee_id=None):
         return employee
 
 
+@transaction.atomic
 def update_employee_in_db(employee, form):
     data = form.cleaned_data
     Employees.objects.filter(id=employee.pk).update(**data)
@@ -61,6 +68,7 @@ def delete_employee_from_db(employee):
     employee.delete()
 
 
+@transaction.atomic
 def create_event_in_db(organization_id, form):
     data = form.cleaned_data
     data['organization_id'] = organization_id
@@ -79,6 +87,7 @@ def get_events_from_db(organization_id=None, event_id=None):
         return event
 
 
+@transaction.atomic
 def update_event_in_db(event, form):
     data = form.cleaned_data
     event_employees = data.pop('employees')

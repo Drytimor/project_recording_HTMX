@@ -193,9 +193,7 @@ class UserUpdateForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_id = 'central-col'
         self.helper.attrs = {
-            'hx-post': reverse_lazy('profile_update', kwargs={
-                'pk': self.instance.pk
-            }),
+            'hx-post': reverse_lazy('profile_update'),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
             'hx-select': '#central-col'

@@ -1,20 +1,22 @@
 from django.urls import path, include
-from .views import (Home, UpdateNav, CleanProfile, AuthRedirect, Logout, Profile, ProfileUpdate, ProfileHTMX,
+from .views import (home, auth_redirect, logout_redirect, profile, profile_update, profile_htmx,
                     profile_delete, signup, password_reset_from_key_done)
 
 urlpatterns = [
-    path('', Home.as_view(), name='home'),
-    path('nav_update/', UpdateNav.as_view(), name='nav_update'),
-    path('clean_profile/', CleanProfile.as_view(), name='clean_profile'),
-    path('auth_redirect/', AuthRedirect.as_view(), name='auth_redirect'),
-    path('logout_redirect/', Logout.as_view(), name='logout_redirect'),
+    path('', home, name='home'),
 
+    # переопределение SignupView django-allauth
+    path('accounts/signup/', signup, name='account_signup'),
+    # переопределение PasswordResetFromKeyDoneView django-allauth
+    path('accounts/password/reset/key/done/', password_reset_from_key_done, name='account_reset_password_from_key_done'),
 
+    path('auth_redirect/', auth_redirect, name='auth_redirect'),
+    path('logout_redirect/', logout_redirect, name='logout_redirect'),
 
-    path('profile/', Profile.as_view(), name='profile'),
-    path('profile_update/<int:pk>/', ProfileUpdate.as_view(), name='profile_update'),
-    path('profile_delete/<int:pk>', profile_delete, name='profile_delete'),
-    path('profile_htmx/', ProfileHTMX.as_view(), name='profile_htmx'),
+    path('profile/', profile, name='profile'),
+    path('profile_update/', profile_update, name='profile_update'),
+    path('profile_delete/', profile_delete, name='profile_delete'),
+    path('profile_htmx/', profile_htmx, name='profile_htmx'),
 
     path('', include('organization.urls')),
 

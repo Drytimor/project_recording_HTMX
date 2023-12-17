@@ -23,7 +23,7 @@ class CreateOrganizationForm(forms.ModelForm):
                                      value='Отмена',
                                      css_class='btn',
                                      hx_get=reverse_lazy('organization_profile'),
-                                     hx_target='#org-profile',
+                                     hx_target='#central-col',
                                      hx_swap="innerHTML"))
 
     category = forms.ModelChoiceField(label='Категория',
@@ -44,8 +44,9 @@ class OrganizationUpdateForm(forms.ModelForm):
             'hx-post': reverse_lazy('organization_update', kwargs={
                 'pk': self.instance.pk
             }),
-            'hx-target': 'this',
+            'hx-target': '#org-profile',
             'hx-swap': 'outerHTML',
+            'hx-select': '#org-profile'
         }
         self.helper.add_input(Submit(name='submit',
                                      value='Изменить'))
@@ -80,6 +81,7 @@ class CreateEventForm(forms.ModelForm):
                                     }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
+
         }
         self.helper.add_input(Submit(name='submit',
                                      value='Создать'))
