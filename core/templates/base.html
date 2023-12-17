@@ -8,13 +8,12 @@
     <link href="{% static 'core/bootstrap5/css/bootstrap.css' %}" rel="stylesheet">
     <script defer src="{% static 'core/bootstrap5/js/bootstrap.bundle.js' %}"></script>
     <script defer src="{% static 'core/htmx/htmx.min.js' %}"></script>
+    <script defer src="{% static 'core/js/custom_js.js' %}"></script>
     <title>{% block title %}Главная{% endblock %}</title>
 
 </head>
 
 <body style="background-color:white">
-{% block time %}
-{% endblock  %}
 <!--Верхняя навигационная панель-->
 <nav class=" navbar navbar-expand-lg navbar-dark bg-dark ">
     <div class=" container-fluid ">
@@ -26,13 +25,10 @@
         </div>
         <div class="d-flex flex-row-reverse bd-highlight" id="parent-div">
             <ul class="navbar-nav"
-                hx-get="{% url 'nav_update' %}"
-                hx-trigger="updateNav from:body"
-                hx-headers='{"trigger": "updateNav"}'>
+                id="nav-bar">
                 {% if user.is_authenticated %}
                     {% block profile_nav_bar %}
 
-                        {% csrf_token %}
                         {% include 'auth_user_nav_bar.html' %}
 
                     {% endblock profile_nav_bar %}
@@ -48,10 +44,19 @@
 
 {% block modal %}
     <!-- Модальное окно регистрации пользователя-->
-    <div class="modal" id="modal-window-auth" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modal-window-auth-label" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable" id="modalTarget">
+    <div class="modal" id="modal-window-signup" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modal-window-auth-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-body" id="modal-form">
+                <div class="modal-body" id="modal-form-signup">
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- Модальное окно входа пользователя-->
+    <div class="modal" id="modal-window-login" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modal-window-auth-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-body" id="modal-form-login">
                 </div>
             </div>
         </div>
@@ -60,12 +65,10 @@
 
 <div class="container-fluid" id="container">
     <div class="row"
-         id="row-main"
-         hx-get="{% url 'clean_profile' %}"
-         hx-trigger="CleanProfile from:body">
+         id="row-main">
         {% block row_main %}
         <!--Левая колонка-->
-        <div class="col-2 pt-5">
+        <div class="col-2">
             <div class="p-3">
                 {% block left_col %}
                 {% endblock left_col %}

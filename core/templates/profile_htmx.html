@@ -13,7 +13,8 @@
             <div><label>Логин</label>: {{ user.username}}</div>
             <div><label>Имя</label>: {{ user.first_name}}</div>
             <div><label>Фамилия</label>: {{ user.last_name}}</div>
-            <button hx-get="{% url 'profile_update' pk=user.id %}" class="btn">
+            <button hx-get="{% url 'profile_update' %}"
+                    class="btn">
             Редактировать
             </button>
         </div>

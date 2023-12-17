@@ -9,10 +9,14 @@
                     {{ employees_name | default:'not'}}
                 {% endfor %}
             </div>
-            <button hx-get="{% url 'event_update' pk=event.id %}" class="btn">
+            <button hx-get="{% url 'event_update' pk=event.id %}"
+                    hx-target="#org-profile"
+                    class="btn">
                     редактировать
             </button>
-            <button hx-post="{% url 'event_delete' pk=event.id %}" class="btn">
+            <button hx-post="{% url 'event_delete' pk=event.id %}"
+                    hx-target="#org-profile"
+                    class="btn">
                     удалить
             </button>
         </div>
@@ -22,7 +26,9 @@
 {% endif %}
 
 <div>
-    <button hx-get="{% url 'event_create' %}" class="btn">
+    <button hx-get="{% url 'event_create' pk=organization_id %}"
+            hx-target="#org-profile"
+            class="btn">
         добавить мероприятие
     </button>
 </div>

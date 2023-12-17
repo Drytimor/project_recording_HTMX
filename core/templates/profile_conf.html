@@ -1,26 +1,37 @@
 {% if user.is_authenticated %}
     <div>
-        <button hx-get="{% url 'account_email' %}"
-                hx-target="#central-col"
-                class="btn">
-            почта
+        <button class="btn"
+                hx-get="{% url 'account_email' %}"
+                hx-target="#central-col">
+                почта
         </button>
     </div>
 
     <div>
-        <button hx-get="{% url 'account_change_password' %}"
-                hx-target="#central-col"
-                class="btn">
-            изменить пароль
+        <button class="btn"
+                hx-get="{% url 'account_change_password' %}"
+                hx-target="#central-col">
+                изменить пароль
         </button>
     </div>
 
     <div>
-        <button hx-post="{% url 'profile_delete' pk=user.id %}"
-                class="btn"
+        <button class="btn"
+                hx-post="{% url 'account_logout' %}"
                 hx-target="#row-main"
+                hx-select="#row-main"
+                hx-push-url="{% url 'home' %}">
+                выход
+        </button>
+    </div>
+
+    <div>
+        <button class="btn"
+                hx-post="{% url 'profile_delete' %}"
+                hx-target="#row-main"
+                hx-select="#row-main"
                 hx-swap="innerHTML">
-            удалить профиль
+                удалить профиль
         </button>
     </div>
 {% endif %}
@@ -28,27 +39,17 @@
 {% if user.is_organization %}
 
     <div>
-        <button hx-get="{% url 'organization_profile' %}"
-                hx-target="#central-col"
-                class="btn">
-            организация
-        </button>
-    </div>
-
-    <div>
-        <button hx-get="{% url 'employee_profile' %}"
-                hx-target="#central-col"
-                class="btn">
-            сотрудники
-        </button>
-    </div>
-
-    <div>
-        <button hx-get="{% url 'event_profile' %}"
-                hx-target="#central-col"
-                class="btn">
-            мероприятия
+        <button class="btn"
+                hx-get="{% url 'organization_profile' %}"
+                hx-target="#central-col">
+                организация
         </button>
     </div>
 
 {% endif %}
+
+<script type="module">
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        })
+</script>
