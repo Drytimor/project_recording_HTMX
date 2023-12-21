@@ -19,6 +19,7 @@ urlpatterns = [
     path('profile_htmx/', profile_htmx, name='profile_htmx'),
 
     path('', include('organization.urls')),
+    path('', include('customer.urls')),
 
 ]
 

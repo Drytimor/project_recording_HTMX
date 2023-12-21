@@ -1,3 +1,5 @@
+const navBar = document.querySelector('#nav-bar')
+
 const auth_user_nav_bar = `
     <li class="nav-item">
         <a class="ms-2 nav-link text-white"
@@ -10,13 +12,6 @@ const auth_user_nav_bar = `
         </a>
     </li>
 `
-
-document.body.addEventListener('AuthUser', function(e){
-    const navBar = document.querySelector('#nav-bar')
-    navBar.innerHTML = auth_user_nav_bar
-    htmx.process(document.body)
-})
-
 
 const anonym_user_nav_bar = `
     <li class="nav-item">
@@ -42,8 +37,19 @@ const anonym_user_nav_bar = `
     </li>
 `
 
-document.body.addEventListener('AnonymUser', function(e){
-    const navBar = document.querySelector('#nav-bar')
+
+document.body.addEventListener('AuthUser', insertAuthNavBar)
+function insertAuthNavBar(){
+    navBar.innerHTML = auth_user_nav_bar
+    htmx.process(document.body)
+    document.body.removeEventListener('AuthUser', insertAuthNavBar)
+}
+
+
+document.body.addEventListener('AnonymUser', insertAnonymNavBar)
+function insertAnonymNavBar(){
     navBar.innerHTML = anonym_user_nav_bar
     htmx.process(document.body)
-})
+    document.body.removeEventListener('AnonymUser', insertAnonymNavBar)
+}
+

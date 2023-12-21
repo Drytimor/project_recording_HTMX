@@ -19,8 +19,20 @@
     <div class=" container-fluid ">
         <div class="d-flex flex-row bd-highlight">
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="me-2 nav-link text-white" href="">мероприятия</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="">организации</a></li>
+                <li class="nav-item">
+                    <a class="me-2 nav-link text-white"
+                       role="button"
+                       hx-get="{% url 'events_all' %}"
+                       hx-target="#central-col">мероприятия
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white"
+                       role="button"
+                       hx-get="{% url 'org_all' %}"
+                       hx-target="#central-col">организации
+                    </a>
+                </li>
             </ul>
         </div>
         <div class="d-flex flex-row-reverse bd-highlight" id="parent-div">
@@ -68,21 +80,21 @@
          id="row-main">
         {% block row_main %}
         <!--Левая колонка-->
-        <div class="col-2">
+        <div class="col-2 pt-5">
             <div class="p-3">
                 {% block left_col %}
                 {% endblock left_col %}
             </div>
         </div>
         <!--Центральная колонка-->
-        <div class="col-8 px-5">
+        <div class="col-8 px-5 pt-5">
             <div id="central-col" class="pt-5">
                 {% block profile_info %}
                 {% endblock profile_info %}
             </div>
         </div>
         <!--Правая колонка-->
-        <div class="col-2">
+        <div class="col-2 pt-5">
             <div class="p-3">
                 {% block right_col %}
                 {% endblock right_col %}

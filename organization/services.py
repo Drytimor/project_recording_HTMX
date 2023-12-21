@@ -1,6 +1,6 @@
 from django.http import Http404
 from django.utils.translation import gettext as _
-from organization.models import Organizations, Employees, Events
+from organization.models import Organizations, Employees, Events, EventRecords
 from organization.todo import db_function
 from django.db import transaction
 
@@ -11,7 +11,8 @@ def create_organization_from_db(user, form, organization_created=True):
     data['user'] = user
     user.organization_created = organization_created
     user.save(update_fields=['organization_created'])
-    Organizations.objects.create(**data)
+    organization = Organizations.objects.create(**data)
+    return organization
 
 
 def get_organization_from_db(user=None, organization_id=None):
@@ -46,7 +47,8 @@ def delete_organization_from_db(user, organization_created=False):
 def create_employee_in_db(organization_id, form):
     data = form.cleaned_data
     data['organization_id'] = organization_id
-    Employees.objects.create(**data)
+    employees = Employees.objects.create(**data)
+    return employees
 
 
 def get_employees_from_db(organization_id=None, employee_id=None):
@@ -75,16 +77,23 @@ def create_event_in_db(organization_id, form):
     event_employees = data.pop('employees')
     event = Events.objects.create(**data)
     event.employees.set(event_employees)
+    return event
 
 
 def get_events_from_db(organization_id=None, event_id=None):
     if organization_id:
-        events = Events.objects.filter(organization_id=organization_id).values('id', 'name', 'employees__name')
-        events_list = db_function(events)
-        return events_list
+        events = Events.objects.filter(organization_id=organization_id)
+        return events
     if event_id:
         event = Events.objects.get(id=event_id)
         return event
+
+
+def get_event_profile_from_db(event_id):
+    queryset = (Events.objects.filter(id=event_id)
+                              .values('id', 'name', 'employees__name'))
+    event_profile = db_function(queryset)
+    return event_profile
 
 
 @transaction.atomic
@@ -96,4 +105,22 @@ def update_event_in_db(event, form):
 
 
 def delete_event_from_db(event):
+    event.event_records.all().delete()
     event.delete()
+
+
+@transaction.atomic
+def create_record_in_db(event, form):
+    data = form.cleaned_data
+    record = EventRecords.objects.create(**data)
+    record.event.add(event)
+    return record
+
+
+def get_records_from_db(event_id):
+    records = (EventRecords.objects
+                           .filter(event__id=event_id)
+                           .order_by('-datetime')
+                           .values('limit_clients', 'quantity_clients', 'datetime'))
+    if len(records) > 0:
+        return records

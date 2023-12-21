@@ -1,12 +1,1 @@
 
-
-
-
-
-    <div id="tabs" hx-target="#tab-contents" role="tablist" _="on htmx:afterOnLoad set @aria-selected of <[aria-selected=true]/> to false tell the target take .selected set @aria-selected to true">
-	<button role="tab" aria-controls="tab-content" aria-selected="true" hx-get="{% url 'organization_profile' %}" class="selected">организация</button>
-	<button role="tab" aria-controls="tab-content" aria-selected="false" hx-get="{% url 'employees_list' pk=organization.id %}">сотрудники</button>
-	<button role="tab" aria-controls="tab-content" aria-selected="false" hx-get="{% url 'events_list' pk=organization.id %}">мероприятия</button>
-</div>
-
-<div id="tab-contents" role="tabpanel" hx-get="{% url 'organization_profile' %}" hx-trigger="load"></div>
