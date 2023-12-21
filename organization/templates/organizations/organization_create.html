@@ -1,0 +1,32 @@
+{% if organization %}
+
+    <p>
+        <button hx-get="{% url 'employees_list' pk=organization.id %}"
+                hx-target="#org-profile"
+                class="btn">
+            сотрудники
+        </button>
+
+        <button hx-get="{% url 'events_list' pk=organization.id %}"
+                hx-target="#org-profile"
+                class="btn">
+            мероприятия
+        </button>
+    </p>
+
+    <div id="org-profile">
+        <div><label>Название</label>: {{ organization.name }}</div>
+        <div><label>Категория</label>: {{ organization.category }}</div>
+        <button hx-get="{% url 'org_form_update' pk=organization.id %}"
+                hx-target="#org-profile"
+                class="btn">
+                редактировать
+        </button>
+        <button hx-post="{% url 'organization_delete' %}"
+                hx-target="#central-col"
+                class="btn">
+                удалить
+        </button>
+    </div>
+
+{% endif %}

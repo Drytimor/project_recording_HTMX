@@ -1,0 +1,18 @@
+{% if employee %}
+    <div>
+        {{ employee.name }}
+        <button hx-get="{% url 'employee_profile'  pk=employee.id %}"
+                hx-target="#org-profile"
+                hx-swap="innerHTML"
+                class="btn">
+                профиль
+        </button>
+
+        <button hx-post="{% url 'employee_delete' pk=employee.id %}"
+                hx-target="closest div"
+                hx-swap="outerHTML"
+                class="btn">
+                удалить
+        </button>
+    </div>
+{% endif %}

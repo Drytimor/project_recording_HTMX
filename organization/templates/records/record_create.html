@@ -1,0 +1,21 @@
+{% if record %}
+    <div>
+        <p><label>Лимит участников</label>: {{ record.limit_clients }}</p>
+        <p><label>Количество участников</label>: {{ record.quantity_clients }}</p>
+        <p><label>Дата</label>: {{ record.datetime }}</p>
+
+        <button hx-get="{% url 'record_form_update' pk=record.id %}"
+                hx-target="closest div"
+                hx-swap="outerHTML"
+                class="btn">
+                редактировать
+        </button>
+
+        <button hx-post="{% url 'record_delete' pk=record.id %}"
+                hx-target="closest div"
+                hx-swap="outerHTML"
+                class="btn">
+                удалить
+        </button>
+    </div>
+{% endif %}

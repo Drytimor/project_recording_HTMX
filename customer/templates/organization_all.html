@@ -1,0 +1,12 @@
+{% if organizations_all %}
+
+    {% for organization in organizations_all %}
+        <div><label>Название</label>: {{ organization.name }}</div>
+        <div><label>Категория</label>: {{ organization.category }}</div>
+    {% endfor %}
+
+{% else %}
+
+<div>Пусто</div>
+
+{% endif %}

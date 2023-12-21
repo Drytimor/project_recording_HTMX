@@ -1,0 +1,23 @@
+{% if event %}
+    <div id="event-profile">
+        <div><label>Название</label>: {{ event.name }}</div>
+        <div><label>Сотрудники</label>:
+            {% for employees_name in event.employees__name %}
+                {{ employees_name | default:'not'}}
+            {% endfor %}
+        </div>
+
+        <button hx-get="{% url 'event_form_update' pk=event.id %}"
+                hx-target="#event-profile"
+                hx-swap="outerHTML"
+                class="btn">
+                редактировать
+        </button>
+
+        <button hx-post="{% url 'event_delete' pk=event.id %}"
+                hx-target="#org-profile"
+                class="btn">
+                удалить
+        </button>
+</div>
+{% endif %}
