@@ -23,13 +23,13 @@ event_urlpatterns = [
 
     path('form/', include([
         path('create/<int:pk>', form_create_event, name='event_form_create'),
-        path('update/<int:pk>', form_update_event, name='event_form_update'),
+        path('update/<int:org_pk>/<int:pk>', form_update_event, name='event_form_update'),
     ])),
 
     path('create/<int:pk>', events_create, name='event_create'),
     path('list/<int:pk>', events_list, name='events_list'),
-    path('profile/<int:pk>', event_profile, name='event_profile'),
-    path('update/<int:pk>', events_update, name='event_update'),
+    path('profile/<int:org_pk>/<int:pk>', event_profile, name='event_profile'),
+    path('update/<int:org_pk>/<int:pk>', events_update, name='event_update'),
     path('delete/<int:pk>', events_delete, name='event_delete'),
 ]
 
@@ -37,13 +37,13 @@ employee_urlpatterns = [
 
     path('form/', include([
         path('create/<int:pk>', form_create_employee, name='employee_form_create'),
-        path('update/<int:pk>', form_update_employee, name='employee_form_update'),
+        path('update/<int:org_pk>/<int:pk>', form_update_employee, name='employee_form_update'),
     ])),
 
     path('create/<int:pk>', employee_create, name='employee_create'),
     path('list/<int:pk>', employees_list, name='employees_list'),
-    path('profile/<int:pk>', employee_profile, name='employee_profile'),
-    path('update/<int:pk>', employee_update, name='employee_update'),
+    path('profile/<int:org_pk>/<int:pk>', employee_profile, name='employee_profile'),
+    path('update/<int:org_pk>/<int:pk>', employee_update, name='employee_update'),
     path('delete/<int:pk>', employee_delete, name='employee_delete'),
 ]
 

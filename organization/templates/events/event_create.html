@@ -1,18 +1,18 @@
-{% if event %}
-    <div>
-        {{ event.name }}
-        <button hx-get="{% url 'event_profile' pk=event.id %}"
-                hx-target="#org-profile"
-                hx-swap="innerHTML"
-                class="btn">
-                профиль
-        </button>
+<div>
+    {{ event.name }}
+    <button hx-get="{% url 'event_profile' org_pk=organization_id pk=event.id %}"
+            hx-target="#org-profile"
+            hx-select="#org-profile"
+            hx-swap="outerHTML"
+            hx-push-url="{% url 'event_profile' org_pk=organization_id pk=event.id %}"
+            class="btn">
+            профиль
+    </button>
 
-        <button hx-post="{% url 'event_delete' pk=event.id %}"
-                hx-target="closest div"
-                hx-swap="outerHTML"
-                class="btn">
-                удалить
-        </button>
-    </div>
-{% endif %}
+    <button hx-post="{% url 'event_delete' pk=event.id %}"
+            hx-target="closest div"
+            hx-swap="outerHTML"
+            class="btn">
+            удалить
+    </button>
+</div>

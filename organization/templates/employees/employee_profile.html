@@ -1,15 +1,29 @@
-{% if employee %}
-    <p>
-        {{ employee.name }}
-        <button hx-get="{% url 'employee_form_update'  pk=employee.id %}"
-                hx-target="#org-profile"
-                class="btn">
-                редактировать
-        </button>
-        <button hx-post="{% url 'employee_delete' pk=employee.id %}"
-                hx-target="#org-profile"
-                class="btn">
-                удалить
-        </button>
-    </p>
-{% endif %}
+{% extends 'employees/employee_list.html' %}
+
+
+{% block org_profile %}
+
+    {% block org_config %}
+        {{ block.super }}
+    {% endblock org_config %}
+
+    <div id="org-profile">
+        {% if employee %}
+            <p>
+                {{ employee.name }}
+                <button hx-get="{% url 'employee_form_update' org_pk=organization_id pk=employee.id %}"
+                        hx-target="#org-profile"
+                        class="btn">
+                        редактировать
+                </button>
+                <button hx-post="{% url 'employee_delete' pk=employee.id %}"
+                        hx-target="#org-profile"
+                        class="btn">
+                        удалить
+                </button>
+            </p>
+        {% endif %}
+    </div>
+
+{% endblock org_profile %}
+

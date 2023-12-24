@@ -90,10 +90,7 @@ class CreateEventForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Закрыть',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('events_list',
-                                                         kwargs={
-                                                             'pk': self.organization
-                                                         }),
+                                     css_id='btn_delete_form_event',
                                      hx_target='#org-profile',
                                      hx_swap="innerHTML"))
 
@@ -115,10 +112,12 @@ class UpdateEventForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['employees'].queryset = Employees.objects.filter(organization_id=self.instance.organization_id)
         self.helper = FormHelper(self)
+        self._organization = self.initial['organization_id']
         self.helper.form_id = 'event-update-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('event_update', kwargs={
                 'pk': self.instance.pk,
+                'org_pk': self.organization
             }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
@@ -132,13 +131,18 @@ class UpdateEventForm(forms.ModelForm):
                                      css_class='btn',
                                      hx_get=reverse_lazy('event_profile',
                                                          kwargs={
-                                                             'pk': self.instance.pk
+                                                             'pk': self.instance.pk,
+                                                             'org_pk': self.organization
                                                          }),
                                      hx_target='#org-profile',
                                      hx_swap="innerHTML"))
 
     employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
                                                widget=forms.CheckboxSelectMultiple)
+
+    @property
+    def organization(self):
+        return self._organization
 
     class Meta:
         model = Events
@@ -161,12 +165,12 @@ class CreateEmployeeForm(forms.ModelForm):
             'hx-swap': 'outerHTML',
         }
         self.helper.add_input(Submit(name='submit',
-                                     value='Создать',))
+                                     value='Создать'))
 
         self.helper.add_input(Button(name='button',
                                      value='Закрыть',
                                      css_class='btn',
-                                     onClick='deleteForm()',
+                                     css_id='btn_delete_form_emp',
                                      hx_target='#org-profile',
                                      hx_swap="innerHTML"))
 
@@ -184,10 +188,12 @@ class UpdateEmployeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self._organization = self.initial['organization_id']
         self.helper.form_id = 'employee-update-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('employee_update', kwargs={
-                'pk': self.instance.pk
+                'pk': self.instance.pk,
+                'org_pk': self.organization
             }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
@@ -200,10 +206,16 @@ class UpdateEmployeeForm(forms.ModelForm):
                                      css_class='btn',
                                      hx_get=reverse_lazy('employee_profile',
                                                          kwargs={
-                                                             'pk': self.instance.pk
+                                                             'pk': self.instance.pk,
+                                                             'org_pk': self.organization
                                                          }),
                                      hx_target='#org-profile',
+                                     hx_select='#org-profile',
                                      hx_swap="innerHTML"))
+
+    @property
+    def organization(self):
+        return self._organization
 
     class Meta:
         model = Employees

@@ -1,7 +1,7 @@
 {% if employee %}
     <p>
         {{ employee.name }}
-        <button hx-get="{% url 'employee_form_update'  pk=employee.id %}"
+        <button hx-get="{% url 'employee_form_update'  org_pk=organization_id pk=employee.id %}"
                 hx-target="#org-profile"
                 class="btn">
                 редактировать

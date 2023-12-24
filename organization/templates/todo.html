@@ -1,1 +1,47 @@
+<script>
+    const btnControlerEmp = {
+    btnShowForm: null,
+    btnDeleteForm: null,
+    disabledBtn: disabledBtnEmp,
+    activateBtn: activateBtnEmp,
+    deleteForm: deleteFormEmp,
+    thiggerActivateBtn: 'activateBtnFormEmp',
+    thiggerDisabledBtn: 'disabledBtnFormEmp',
+    get disabled(){
+        this.btnShowForm.setAttribute('disabled', '');
+        document.body.removeEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+        document.body.addEventListener(this.thiggerActivateBtn, this.activateBtn);
+        this.btnDeleteForm.addEventListener('click', this.deleteForm);
+    },
+    get activated(){
+        this.btnShowForm.removeAttribute('disabled');
+        document.body.removeEventListener(this.thiggerActivateBtn, this.activateBtn);
+        this.btnDeleteForm.removeEventListener('click', this.deleteForm);
+        document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+    },
+    get deleted(){
+        this.btnShowForm.removeAttribute('disabled');
+        this.btnDeleteForm.removeEventListener('click', this.deleteForm);
+        document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+    },
+}
 
+
+document.body.addEventListener('disabledBtnFormEmp', disabledBtnEmp)
+
+function disabledBtnEmp(e){
+    btnControlerEmp.btnShowForm = document.querySelector('#btn_show_form_emp');
+    btnControlerEmp.btnDeleteForm = document.querySelector('#btn_delete_form_emp');
+    btnControlerEmp.disabled
+}
+
+function activateBtnEmp(e){
+    btnControlerEmp.activated
+}
+
+function deleteFormEmp(e){
+    const form = document.querySelector('#employee-create-form');
+    btnControlerEmp.deleted
+    form.remove()
+}
+</script>

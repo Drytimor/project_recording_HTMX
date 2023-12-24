@@ -1,72 +1,32 @@
-<div>
-    <button id="btn_show_form_emp"
-            hx-get="{% url 'employee_form_create' pk=organization_id %}"
-            hx-target="#employees-list"
-            hx-swap="afterbegin"
-            class="btn">
-            добавить сотрудника
-    </button>
-</div>
-
-<div id="employees-list">
-
-    {% if employees %}
-        {% for employee in employees %}
-            <div>
-                {{ employee.name }}
-                <button hx-get="{% url 'employee_profile'  pk=employee.id %}"
-                        hx-target="#org-profile"
-                        hx-swap="innerHTML"
-                        class="btn">
-                        профиль
-                </button>
-
-                <button hx-post="{% url 'employee_delete' pk=employee.id %}"
-                        hx-target="closest div"
-                        hx-swap="outerHTML"
-                        class="btn">
-                        удалить
-                </button>
-            </div>
-        {% endfor %}
-    {% endif %}
-</div>
-
-<script>
-
-    document.querySelector('#btn_show_form_emp').addEventListener('click', disabledBtn);
-    function disabledBtn(){
-        let btn = document.querySelector('#btn_show_form_emp');
-        btn.setAttribute('disabled', '');
-        console.log(btn === this);
-        btn.removeEventListener('click', disabledBtn);
-        document.body.addEventListener('ActivateBtnFormEmp', activateBtn);
-    };
-
-    function activateBtn(){
-        let btn = document.querySelector('#btn_show_form_emp');
-        btn.removeAttribute('disabled');
-        document.body.removeEventListener('ActivateBtnFormEmp', activateBtn);
-        document.querySelector('#btn_show_form_emp').addEventListener('click', disabledBtn);
-    }
-
-    function deleteForm(){
-        let form = document.querySelector('#employee-create-form');
-        form.remove();
-        let btn = document.querySelector('#btn_show_form_emp');
-        btn.removeAttribute('disabled');
-        document.querySelector('#btn_show_form_emp').addEventListener('click', disabledBtn);
-    }
-
-    function controlBtnShowForm(disabled=true){
-        let btn = document.querySelector('#btn_show_form_emp');
-        if (disabled){
-            btn.setAttribute('disabled', '');
-            return btn
-        }else{
-            btn.removeAttribute('disabled');
-        }}
-
-</script>
+{% extends 'organizations/organization_profile.html' %}
 
 
+{% block org_profile %}
+
+    {% block org_config %}
+        {{ block.super }}
+    {% endblock org_config %}
+
+    <div id="org-profile">
+        <div>
+            <button id="btn_show_form_emp"
+                    hx-get="{% url 'employee_form_create' pk=organization_id %}"
+                    hx-target="#employees-list"
+                    hx-swap="afterbegin"
+                    class="btn">
+                    добавить сотрудника
+            </button>
+        </div>
+
+        <div id="employees-list">
+
+            {% if employees %}
+                {% for employee in employees %}
+                    {% include 'employees/employee_create.html' %}
+                {% endfor %}
+            {% endif %}
+
+        </div>
+    </div>
+
+{% endblock org_profile %}

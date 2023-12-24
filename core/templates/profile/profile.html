@@ -1,11 +1,23 @@
-{% if user.is_authenticated %}
-<!--Левая колонка-->
+{% extends 'base.html' %}
+
+{% block head %}
+{{ block.super }}
+
+    <title>Профиль</title>
+
+{% endblock head %}
+
+
+{% block left_col %}
     <div class="col-2 pt-5">
         <div class="p-3">
-            {% include 'profile_conf.html' %}
+            {% include 'profile/profile_conf.html' %}
         </div>
     </div>
-    <!--Центральная колонка-->
+{% endblock left_col %}
+
+
+{% block central_col %}
     <div class="col-8 px-5 pt-5">
         <div id="central-col"
              hx-target="this"
@@ -13,20 +25,23 @@
             <div><label>Логин</label>: {{ user.username}}</div>
             <div><label>Имя</label>: {{ user.first_name}}</div>
             <div><label>Фамилия</label>: {{ user.last_name}}</div>
-            <button hx-get="{% url 'profile_update' %}"
+
+            <button hx-get="{% url 'profile_form_update' %}"
                     class="btn">
-            Редактировать
+                    Редактировать
             </button>
+
         </div>
     </div>
-    <!--Правая колонка-->
+{% endblock central_col %}
+
+
+{% block right_col %}
     <div class="col-2 pt-5">
         <div class="p-3">
         </div>
     </div>
+{% endblock right_col %}
 
-{% else %}
-
-    <p>Пожалуйста, войдите в аккаунт</p>
-
-{% endif %}
+{% block script %}
+{% endblock script %}

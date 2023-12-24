@@ -1,39 +1,52 @@
+{% extends 'events/event_list.html' %}
 {% load crispy_forms_tags %}
 
-{% if event %}
-    <div id="event-profile">
-        {% for event in event %}
-            <div><label>Название</label>: {{ event.name }}</div>
-            <div><label>Сотрудники</label>:
-                {% for employees_name in event.employees__name %}
-                    {{ employees_name | default:'not'}}
+
+{% block org_profile %}
+
+    {% block org_config %}
+        {{ block.super }}
+    {% endblock org_config %}
+
+    <div id="org-profile">
+        {% if event %}
+            <div id="event-profile">
+                {% for event in event %}
+                    <div><label>Название</label>: {{ event.name }}</div>
+                    <div><label>Сотрудники</label>:
+                        {% for employees_name in event.employees__name %}
+                            {{ employees_name | default:'not'}}
+                        {% endfor %}
+                    </div>
+
+                    <button hx-get="{% url 'event_form_update' org_pk=organization_id pk=event.id %}"
+                            hx-target="#event-profile"
+                            hx-swap="outerHTML"
+                            class="btn">
+                            редактировать
+                    </button>
+
+                    <button hx-post="{% url 'event_delete' pk=event.id %}"
+                            hx-target="#org-profile"
+                            class="btn">
+                            удалить
+                    </button>
+
                 {% endfor %}
             </div>
 
-            <button hx-get="{% url 'event_form_update' pk=event.id %}"
-                    hx-target="#event-profile"
-                    hx-swap="outerHTML"
+            <button hx-get="{% url 'records_list' pk=event_id %}"
+                    hx-target="#record-profile"
                     class="btn">
-                    редактировать
+                    записи
             </button>
 
-            <button hx-post="{% url 'event_delete' pk=event.id %}"
-                    hx-target="#org-profile"
-                    class="btn">
-                    удалить
-            </button>
+            <div id="record-profile">
 
-        {% endfor %}
-    </div>
+            </div>
 
-    <button hx-get="{% url 'records_list' pk=event_id %}"
-            hx-target="#record-profile"
-            class="btn">
-            записи
-    </button>
-
-    <div id="record-profile">
+        {% endif %}
 
     </div>
 
-{% endif %}
+{% endblock org_profile %}

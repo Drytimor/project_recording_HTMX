@@ -1,9 +1,10 @@
 <li class="nav-item">
     <a class="ms-2 nav-link text-white"
        role="button"
-       hx-get="{% url 'profile_htmx' %}"
-       hx-target="#row-main"
-       hx-swap="innerHTML"
+       hx-get="{% url 'profile' %}"
+       hx-target="#container"
+       hx-select="#container"
+       hx-swap="outerHTML"
        hx-push-url="{% url 'profile' %}">
        Профиль
     </a>
