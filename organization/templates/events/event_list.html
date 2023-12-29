@@ -1,0 +1,12 @@
+{% extends 'organizations/organization_profile.html' %}
+
+{% block org_profile %}
+
+    {% block org_config %}
+        {{ block.super }}
+    {% endblock org_config %}
+
+    {% include 'events/htmx/event_list.html' %}
+
+{% endblock org_profile %}
+

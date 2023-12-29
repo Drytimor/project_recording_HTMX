@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
     'core',
     'organization',
+    'customer',
     'crispy_forms',
     'crispy_bootstrap5',
     'crispy_forms_foundation',

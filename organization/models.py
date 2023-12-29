@@ -75,6 +75,18 @@ class EventsManager(models.Manager):
     pass
 
 
+class Records(models.Model):
+
+    limit_clients = models.SmallIntegerField()
+
+    quantity_clients = models.SmallIntegerField(default=0)
+
+    datetime = models.DateTimeField()
+
+    class Meta:
+        db_table = 'records'
+
+
 class Events(models.Model):
 
     organization = models.ForeignKey('organizations',
@@ -87,6 +99,10 @@ class Events(models.Model):
     employees = models.ManyToManyField('employees',
                                        verbose_name='Сотрудник',
                                        related_name='events')
+    record = models.ManyToManyField('records',
+                                    related_name='events')
+
+    is_active = models.BooleanField(default=False)
 
     objects = EventsManager()
 

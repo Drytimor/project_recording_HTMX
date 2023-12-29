@@ -196,7 +196,6 @@ class UserUpdateForm(forms.ModelForm):
             'hx-post': reverse_lazy('profile_update'),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
-            'hx-select': '#central-col'
         }
         self.helper.add_input(Submit(name='submit',
                                      value='Изменить'))
@@ -204,7 +203,7 @@ class UserUpdateForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Отмена',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('profile_htmx'),
+                                     hx_get=reverse_lazy('profile'),
                                      hx_target="#central-col",
                                      hx_select="#central-col",
                                      hx_swap="outerHTML"))

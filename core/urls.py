@@ -1,6 +1,6 @@
 from django.urls import path, include
-from .views import (home, auth_redirect, logout_redirect, profile, profile_update, profile_htmx,
-                    profile_delete, signup, password_reset_from_key_done)
+from .views import (home, auth_redirect, logout_redirect, profile, profile_update,
+                    profile_delete, signup, password_reset_from_key_done, form_update_profile)
 
 urlpatterns = [
     path('', home, name='home'),
@@ -13,12 +13,17 @@ urlpatterns = [
     path('auth_redirect/', auth_redirect, name='auth_redirect'),
     path('logout_redirect/', logout_redirect, name='logout_redirect'),
 
-    path('profile/', profile, name='profile'),
-    path('profile_update/', profile_update, name='profile_update'),
-    path('profile_delete/', profile_delete, name='profile_delete'),
-    path('profile_htmx/', profile_htmx, name='profile_htmx'),
+    path('profile/', include([
+
+        path('', profile, name='profile'),
+        path('form/update/', form_update_profile, name='profile_form_update'),
+        path('update/', profile_update, name='profile_update'),
+        path('delete/', profile_delete, name='profile_delete'),
+
+    ])),
 
     path('', include('organization.urls')),
+    path('', include('customer.urls')),
 
 ]
 

@@ -1,46 +1,63 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
 
+<head>
+ {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="{% static 'core/bootstrap5/css/bootstrap.css' %}" rel="stylesheet">
     <script defer src="{% static 'core/bootstrap5/js/bootstrap.bundle.js' %}"></script>
     <script defer src="{% static 'core/htmx/htmx.min.js' %}"></script>
     <script defer src="{% static 'core/js/custom_js.js' %}"></script>
-    <title>{% block title %}Главная{% endblock %}</title>
-
+    <title> Главная </title>
+{% endblock head %}
 </head>
 
 <body style="background-color:white">
-<!--Верхняя навигационная панель-->
-<nav class=" navbar navbar-expand-lg navbar-dark bg-dark ">
-    <div class=" container-fluid ">
-        <div class="d-flex flex-row bd-highlight">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="me-2 nav-link text-white" href="">мероприятия</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="">организации</a></li>
-            </ul>
+
+{% block nav_bar %}
+    <!--Верхняя навигационная панель-->
+    <nav class=" navbar navbar-expand-lg navbar-dark bg-dark ">
+        <div class=" container-fluid ">
+            <div class="d-flex flex-row bd-highlight">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="me-2 nav-link text-white"
+                           role="button"
+                           hx-get="{% url 'events_all' %}"
+                           hx-target="#central-col">мероприятия
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white"
+                           role="button"
+                           hx-get="{% url 'org_all' %}"
+                           hx-target="#central-col">организации
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex flex-row-reverse bd-highlight" id="parent-div">
+                <ul class="navbar-nav"
+                    id="nav-bar">
+                    {% if user.is_authenticated %}
+                        {% block profile_nav_bar %}
+
+                            {% include 'auth_user_nav_bar.html' %}
+
+                        {% endblock profile_nav_bar %}
+                    {% else %}
+
+                        {% include 'anonym_user_nav_bar.html' %}
+
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-        <div class="d-flex flex-row-reverse bd-highlight" id="parent-div">
-            <ul class="navbar-nav"
-                id="nav-bar">
-                {% if user.is_authenticated %}
-                    {% block profile_nav_bar %}
+    </nav>
+{% endblock nav_bar %}
 
-                        {% include 'auth_user_nav_bar.html' %}
-
-                    {% endblock profile_nav_bar %}
-                {% else %}
-
-                    {% include 'anonym_user_nav_bar.html' %}
-
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-</nav>
 
 {% block modal %}
     <!-- Модальное окно регистрации пользователя-->
@@ -66,32 +83,34 @@
 <div class="container-fluid" id="container">
     <div class="row"
          id="row-main">
-        {% block row_main %}
+
         <!--Левая колонка-->
-        <div class="col-2">
-            <div class="p-3">
-                {% block left_col %}
-                {% endblock left_col %}
+        {% block left_col %}
+            <div class="col-2 pt-5">
+                <div class="p-3"></div>
             </div>
-        </div>
+        {% endblock left_col %}
+
+        {% block central_col %}
         <!--Центральная колонка-->
-        <div class="col-8 px-5">
-            <div id="central-col" class="pt-5">
-                {% block profile_info %}
-                {% endblock profile_info %}
+            <div class="col-8 px-5 pt-5">
+                <div id="central-col" class="pt-5"></div>
             </div>
-        </div>
+        {% endblock central_col %}
+
+        {% block right_col %}
         <!--Правая колонка-->
-        <div class="col-2">
-            <div class="p-3">
-                {% block right_col %}
-                {% endblock right_col %}
+            <div class="col-2 pt-5">
+                <div class="p-3"></div>
             </div>
-        </div>
-        {% endblock row_main %}
+        {% endblock right_col %}
+
     </div>
 </div>
 
+
+{% block script %}
+{% endblock script %}
 
 </body>
 </html>

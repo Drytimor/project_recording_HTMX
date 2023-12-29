@@ -40,8 +40,11 @@
 
     <div>
         <button class="btn"
-                hx-get="{% url 'organization_profile' %}"
-                hx-target="#central-col">
+                hx-get="{% url 'organization_profile' pk=user.id %}"
+                hx-target="#central-col"
+                hx-select="#central-col"
+                hx-swap="outerHTMl"
+                hx-push-url="{% url 'organization_profile' pk=user.id %}">
                 организация
         </button>
     </div>

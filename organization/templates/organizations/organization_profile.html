@@ -1,0 +1,35 @@
+{% extends 'profile/profile.html' %}
+
+
+{% block central_col %}
+
+    <div class="col-8 px-5 pt-5">
+        <div id="central-col"
+            hx-target="this"
+            hx-swap="innerHTML">
+
+            {% block org_profile %}
+
+                {% if organization %}
+
+                    {% block org_config %}
+                        {% include 'organizations/organization_config.html' %}
+                    {% endblock org_config %}
+
+                    {% include 'organizations/pattern/profile.html' %}
+
+                {% else %}
+
+                    {% include 'organizations/pattern/organization_none.html' %}
+
+                {% endif %}
+
+            {% endblock org_profile %}
+
+        </div>
+    </div>
+
+{% endblock central_col %}
+
+{% block script %}
+{% endblock script %}

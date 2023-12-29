@@ -1,0 +1,19 @@
+<div id="org-profile">
+    <div>
+        <button id="btn_show_form_event"
+                hx-get="{% url 'event_form_create' pk=organization_id %}"
+                hx-target="#events-list"
+                hx-swap="afterbegin"
+                class="btn">
+            добавить мероприятие
+        </button>
+    </div>
+
+    <div id="events-list">
+        {% if events %}
+            {% for event in events %}
+                {% include 'events/event_create.html' %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>

@@ -1,12 +1,28 @@
-
-
-
-
-
-    <div id="tabs" hx-target="#tab-contents" role="tablist" _="on htmx:afterOnLoad set @aria-selected of <[aria-selected=true]/> to false tell the target take .selected set @aria-selected to true">
-	<button role="tab" aria-controls="tab-content" aria-selected="true" hx-get="{% url 'organization_profile' %}" class="selected">организация</button>
-	<button role="tab" aria-controls="tab-content" aria-selected="false" hx-get="{% url 'employees_list' pk=organization.id %}">сотрудники</button>
-	<button role="tab" aria-controls="tab-content" aria-selected="false" hx-get="{% url 'events_list' pk=organization.id %}">мероприятия</button>
-</div>
-
-<div id="tab-contents" role="tabpanel" hx-get="{% url 'organization_profile' %}" hx-trigger="load"></div>
+<script>
+const btnControlerEmp = {
+    btnShowForm: null,
+    disabledBtn: disabledBtnEmp,
+    activateBtn: activateBtnEmp,
+    closeForm: closeFormEmp,
+    thiggerActivateBtn: 'activateBtnFormEmp',
+    thiggerDisabledBtn: 'disabledBtnFormEmp',
+    thiggerCloseForm: 'closeFormEmp',
+    get disable(){
+        this.btnShowForm.setAttribute('disabled', '');
+        document.body.removeEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+        document.body.addEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.addEventListener(this.thiggerActivateBtn, this.activateBtn);
+    },
+    get activate(){
+        this.btnShowForm.removeAttribute('disabled');
+        document.body.removeEventListener(this.thiggerActivateBtn, this.activateBtn);
+        document.body.removeEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+    },
+    get close(){
+        this.btnShowForm.removeAttribute('disabled');
+        document.body.removeEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+    },
+}
+</script>
