@@ -5,46 +5,27 @@
 
     <div class="col-8 px-5 pt-5">
         <div id="central-col"
-             hx-target="this"
-             hx-swap="innerHTML">
+            hx-target="this"
+            hx-swap="innerHTML">
+
             {% block org_profile %}
+
                 {% if organization %}
 
                     {% block org_config %}
                         {% include 'organizations/organization_config.html' %}
                     {% endblock org_config %}
 
-
-                    <div id="org-profile">
-
-                        <div><label>Название</label>: {{ organization.name }}</div>
-                        <div><label>Категория</label>: {{ organization.category }}</div>
-                        <button hx-get="{% url 'org_form_update' pk=organization.id %}"
-                                hx-target="#org-profile"
-                                class="btn">
-                                редактировать
-                        </button>
-                        <button hx-post="{% url 'organization_delete' %}"
-                                hx-target="#central-col"
-                                class="btn">
-                                удалить
-                        </button>
-
-                    </div>
+                    {% include 'organizations/pattern/profile.html' %}
 
                 {% else %}
 
-                    <div id="org-create-form">
-                        <button class="btn"
-                                hx-get="{% url 'org_form_create' %}"
-                                hx-target="#org-create-form"
-                                hx-swap="outerHTML">
-                                создать организацию
-                        </button>
-                    </div>
+                    {% include 'organizations/pattern/organization_none.html' %}
 
                 {% endif %}
+
             {% endblock org_profile %}
+
         </div>
     </div>
 

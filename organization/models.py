@@ -75,10 +75,7 @@ class EventsManager(models.Manager):
     pass
 
 
-class EventRecords(models.Model):
-
-    event = models.ManyToManyField('events',
-                                   related_name='event_records')
+class Records(models.Model):
 
     limit_clients = models.SmallIntegerField()
 
@@ -87,7 +84,7 @@ class EventRecords(models.Model):
     datetime = models.DateTimeField()
 
     class Meta:
-        db_table = 'event_records'
+        db_table = 'records'
 
 
 class Events(models.Model):
@@ -102,6 +99,8 @@ class Events(models.Model):
     employees = models.ManyToManyField('employees',
                                        verbose_name='Сотрудник',
                                        related_name='events')
+    record = models.ManyToManyField('records',
+                                    related_name='events')
 
     is_active = models.BooleanField(default=False)
 
@@ -109,10 +108,6 @@ class Events(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-
-    def delete(self, *args, **kwargs):
-        a = 'a'
-        super().delete(*args, **kwargs)
 
     class Meta:
         db_table = 'events'

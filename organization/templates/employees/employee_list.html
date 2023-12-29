@@ -7,26 +7,6 @@
         {{ block.super }}
     {% endblock org_config %}
 
-    <div id="org-profile">
-        <div>
-            <button id="btn_show_form_emp"
-                    hx-get="{% url 'employee_form_create' pk=organization_id %}"
-                    hx-target="#employees-list"
-                    hx-swap="afterbegin"
-                    class="btn">
-                    добавить сотрудника
-            </button>
-        </div>
-
-        <div id="employees-list">
-
-            {% if employees %}
-                {% for employee in employees %}
-                    {% include 'employees/employee_create.html' %}
-                {% endfor %}
-            {% endif %}
-
-        </div>
-    </div>
+    {% include 'employees/htmx/employee_list.html' %}
 
 {% endblock org_profile %}

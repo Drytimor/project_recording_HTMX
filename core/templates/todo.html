@@ -1,35 +1,42 @@
 <script>
-document.body.addEventListener('disabledBtnFormEmp', disabledBtn)
-function disabledBtn(e){
-    controlBtnVisibility()
-}
+class ControllerForm {
+    constructor(
+        disabledBtn, activateBtn, closeForm,
+        thiggerDisabledBtn,thiggerActivateBtn,
+         thiggerCloseForm, btnShowForm=null
+    ){
+        this.disabledBtn = disabledBtn;
+        this.activateBtn = activateBtn;
+        this.closeForm = closeForm;
+        this.thiggerDisabledBtn = thiggerDisabledBtn;
+        this.thiggerActivateBtn = thiggerActivateBtn;
+        this.thiggerCloseForm = thiggerCloseForm;
+        this.btnShowForm = btnShowForm;
+    }
 
-function activateBtn(e){
-    const btnFormEmp = document.querySelector('#btn_show_form_emp');
-    const btnDeleteFormEmp = document.querySelector('#btn_delete_form_emp');
-    btnFormEmp.removeAttribute('disabled');
-    document.body.removeEventListener('activateBtnFormEmp', activateBtn);
-    document.body.addEventListener('disabledBtnFormEmp', disabledBtn)
-}
+    get disable(){
+        if (this.btnShowForm){
+            this.btnShowForm.setAttribute('disabled', '');
+        }
+        document.body.removeEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+        document.body.addEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.addEventListener(this.thiggerActivateBtn, this.activateBtn);
+        document.body.addEventListener('click', this.disabledBtn);
+    }
 
-function deleteForm(e){
-    let form = document.querySelector('#employee-create-form');
-    controlBtnVisibility(false)
-    form.remove()
-}
+    get activate(){
+        this.btnShowForm.removeAttribute('disabled');
+        document.body.removeEventListener(this.thiggerActivateBtn, this.activateBtn);
+        document.body.removeEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.removeEventListener('click', this.disabledBtn);
+        document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+    }
 
-function controlBtnVisibility(disabled=true){
-    const btnDeleteFormEmp = document.querySelector('#btn_delete_form_emp');
-    const btnFormEmp = document.querySelector('#btn_show_form_emp')
-    if (disabled){
-        btnFormEmp.setAttribute('disabled', '');
-        document.body.removeEventListener('disabledBtnFormEmp', disabledBtn);
-        document.body.addEventListener('activateBtnFormEmp', activateBtn);
-        btnDeleteFormEmp.addEventListener('click', deleteForm);
-    }else{
-        btnFormEmp.removeAttribute('disabled');
-        btnDeleteFormEmp.removeEventListener('click', deleteForm)
-        document.body.addEventListener('disabledBtnFormEmp', disabledBtn)
+    get close(){
+        this.btnShowForm.removeAttribute('disabled');
+        document.body.removeEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.removeEventListener('click', this.disabledBtn);
+        document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
     }
 }
 </script>

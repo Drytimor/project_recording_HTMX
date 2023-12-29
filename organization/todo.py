@@ -1,22 +1,12 @@
+from collections import defaultdict
+
+
 def db_function(queryset):
-    lst = []
-    for i in queryset:
-        d = {}
-        id_ = None
-        for k, v in i.items():
-            if k == 'id':
-                id_ = v
-            if len(lst) > 0 and id_ == lst[-1]['id']:
-                if k != 'employees__name':
-                    continue
-                else:
-                    lst[-1]['employees__name'].append(v)
-                    continue
+    d = defaultdict(list)
+    for dict_db in queryset:
+        for k, v in dict_db.items():
             if k == 'employees__name':
-                d1 = {k: [v]}
+                d[k].append(v)
             else:
-                d1 = {k: v}
-            d.update(d1)
-        if d:
-            lst.append(d)
-    return lst
+                d[k] = v
+    return d

@@ -57,49 +57,123 @@ function insertAnonymNavBar(){
 }
 
 
-const btnControlerEmp = {
-    btnShowForm: null,
-    btnDeleteForm: null,
-    disabledBtn: disabledBtnEmp,
-    activateBtn: activateBtnEmp,
-    deleteForm: deleteFormEmp,
-    thiggerActivateBtn: 'activateBtnFormEmp',
-    thiggerDisabledBtn: 'disabledBtnFormEmp',
-    get disabled(){
-        this.btnShowForm.setAttribute('disabled', '');
+class ControllerForm {
+    constructor(
+        disabledBtn, activateBtn, closeForm,
+        thiggerDisabledBtn,thiggerActivateBtn,
+         thiggerCloseForm, btnShowForm=null
+    ){
+        this.disabledBtn = disabledBtn;
+        this.activateBtn = activateBtn;
+        this.closeForm = closeForm;
+        this.thiggerDisabledBtn = thiggerDisabledBtn;
+        this.thiggerActivateBtn = thiggerActivateBtn;
+        this.thiggerCloseForm = thiggerCloseForm;
+        this.btnShowForm = btnShowForm;
+    }
+
+    get disable(){
+        if (this.btnShowForm){
+            this.btnShowForm.setAttribute('disabled', '');
+        }
         document.body.removeEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+        document.body.addEventListener(this.thiggerCloseForm, this.closeForm);
         document.body.addEventListener(this.thiggerActivateBtn, this.activateBtn);
-        this.btnDeleteForm.addEventListener('click', this.deleteForm);
-    },
-    get activated(){
+        document.body.addEventListener('click', this.disabledBtn);
+    }
+
+    get activate(){
         this.btnShowForm.removeAttribute('disabled');
         document.body.removeEventListener(this.thiggerActivateBtn, this.activateBtn);
-        this.btnDeleteForm.removeEventListener('click', this.deleteForm);
+        document.body.removeEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.removeEventListener('click', this.disabledBtn);
         document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
-    },
-    get deleted(){
+    }
+
+    get close(){
         this.btnShowForm.removeAttribute('disabled');
-        this.btnDeleteForm.removeEventListener('click', this.deleteForm);
+        document.body.removeEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.removeEventListener('click', this.disabledBtn);
         document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
-    },
+    }
 }
 
+// Контроллер формы Employee
 
 document.body.addEventListener('disabledBtnFormEmp', disabledBtnEmp)
 
+const ControllerFormEmppoyee = new ControllerForm(
+    disabledBtnEmp,
+    activateBtnEmp,
+    closeFormEmp,
+    'disabledBtnFormEmp',
+    'activateBtnFormEmp',
+    'closeFormEmp',
+)
+
 function disabledBtnEmp(e){
-    btnControlerEmp.btnShowForm = document.querySelector('#btn_show_form_emp');
-    btnControlerEmp.btnDeleteForm = document.querySelector('#btn_delete_form_emp');
-    btnControlerEmp.disabled
+    ControllerFormEmppoyee.btnShowForm = document.querySelector('#btn_show_form_emp');
+    ControllerFormEmppoyee.disable
 }
 
 function activateBtnEmp(e){
-    btnControlerEmp.activated
+    ControllerFormEmppoyee.activate
 }
 
-function deleteFormEmp(e){
-    const form = document.querySelector('#employee-create-form');
-    btnControlerEmp.deleted
-    form.remove()
+function closeFormEmp(e){
+    ControllerFormEmppoyee.close
 }
 
+
+// Контроллер формы Event
+
+document.body.addEventListener('disabledBtnFormEvent', disabledBtnEvent)
+
+const ControllerFormEvent = new ControllerForm(
+    disabledBtnEvent,
+    activateBtnEvent,
+    closeFormEvent,
+    'disabledBtnFormEvent',
+    'activateBtnFormEvent',
+    'closeFormEvent',
+)
+
+function disabledBtnEvent(e){
+    ControllerFormEvent.btnShowForm = document.querySelector('#btn_show_form_event');
+    ControllerFormEvent.disable
+}
+
+function activateBtnEvent(e){
+    ControllerFormEvent.activate
+}
+
+function closeFormEvent(e){
+    ControllerFormEvent.close
+}
+
+
+// Контроллер формы Record
+
+document.body.addEventListener('disabledBtnFormRecord', disabledBtnRecord)
+
+const ControllerFormRecord = new ControllerForm(
+    disabledBtnRecord,
+    activateBtnRecord,
+    closeFormRecord,
+    'disabledBtnFormRecord',
+    'activateBtnFormRecord',
+    'closeFormRecord',
+)
+
+function disabledBtnRecord(e){
+    ControllerFormRecord.btnShowForm = document.querySelector('#btn_show_form_record');
+    ControllerFormRecord.disable
+}
+
+function activateBtnRecord(e){
+    ControllerFormRecord.activate
+}
+
+function closeFormRecord(e){
+    ControllerFormRecord.close
+}
