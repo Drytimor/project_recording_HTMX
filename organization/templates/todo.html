@@ -1,1 +1,28 @@
-
+<script>
+const btnControlerEmp = {
+    btnShowForm: null,
+    disabledBtn: disabledBtnEmp,
+    activateBtn: activateBtnEmp,
+    closeForm: closeFormEmp,
+    thiggerActivateBtn: 'activateBtnFormEmp',
+    thiggerDisabledBtn: 'disabledBtnFormEmp',
+    thiggerCloseForm: 'closeFormEmp',
+    get disable(){
+        this.btnShowForm.setAttribute('disabled', '');
+        document.body.removeEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+        document.body.addEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.addEventListener(this.thiggerActivateBtn, this.activateBtn);
+    },
+    get activate(){
+        this.btnShowForm.removeAttribute('disabled');
+        document.body.removeEventListener(this.thiggerActivateBtn, this.activateBtn);
+        document.body.removeEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+    },
+    get close(){
+        this.btnShowForm.removeAttribute('disabled');
+        document.body.removeEventListener(this.thiggerCloseForm, this.closeForm);
+        document.body.addEventListener(this.thiggerDisabledBtn, this.disabledBtn);
+    },
+}
+</script>

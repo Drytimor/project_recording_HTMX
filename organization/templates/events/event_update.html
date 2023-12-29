@@ -7,7 +7,7 @@
             {% endfor %}
         </div>
 
-        <button hx-get="{% url 'event_form_update' pk=event.id %}"
+        <button hx-get="{% url 'event_form_update' org_pk=organization_id pk=event.id %}"
                 hx-target="#event-profile"
                 hx-swap="outerHTML"
                 class="btn">
@@ -19,5 +19,5 @@
                 class="btn">
                 удалить
         </button>
-</div>
+    </div>
 {% endif %}

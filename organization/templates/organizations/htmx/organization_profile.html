@@ -1,0 +1,23 @@
+<div id="central-col"
+ hx-target="this"
+ hx-swap="innerHTML">
+
+    {% block org_profile %}
+
+        {% if organization %}
+
+            {% block org_config %}
+                {% include 'organizations/organization_config.html' %}
+            {% endblock org_config %}
+
+            {% include 'organizations/pattern/profile.html' %}
+
+        {% else %}
+
+            {% include 'organizations/pattern/organization_none.html' %}
+
+        {% endif %}
+
+    {% endblock org_profile %}
+
+</div>

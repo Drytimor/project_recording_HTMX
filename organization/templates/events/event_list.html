@@ -1,30 +1,12 @@
-<div>
-    <button hx-get="{% url 'event_form_create' pk=organization_id %}"
-            hx-target="#events-list"
-            hx-swap="afterbegin"
-            class="btn">
-        добавить мероприятие
-    </button>
-</div>
+{% extends 'organizations/organization_profile.html' %}
 
-<div id="events-list">
-    {% if events %}
-        {% for event in events %}
-            {{ event.name }}
-            <button hx-get="{% url 'event_profile' pk=event.id %}"
-                    hx-target="#org-profile"
-                    hx-swap="innerHTML"
-                    class="btn">
-                    Профиль
-            </button>
+{% block org_profile %}
 
-            <button hx-post="{% url 'event_delete' pk=event.id %}"
-                    hx-target="closest div"
-                    hx-swap="outerHTML"
-                    class="btn">
-                    удалить
-            </button>
-        {% endfor %}
-    {% endif %}
-</div>
+    {% block org_config %}
+        {{ block.super }}
+    {% endblock org_config %}
+
+    {% include 'events/htmx/event_list.html' %}
+
+{% endblock org_profile %}
 

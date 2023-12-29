@@ -66,32 +66,26 @@ class CustomSignupView(SignupView):
 signup = CustomSignupView.as_view()
 
 
-class Profile(View):
+class Profile(TemplateResponseMixin, ContextMixin, View):
+
+    template_name = 'profile/profile.html'
 
     def get(self, *args, **kwargs):
-        return render(self.request, 'profile.html')
+        context = self.get_context_data()
+        return self.render_to_response(context=context)
 
 
 profile = Profile.as_view()
 
 
-class ProfileHTMX(View):
+class ProfileUpdateForm(TemplateResponseMixin, FormMixin, View):
 
-    def get(self, *args, **kwargs):
-        return render(self.request, 'profile_htmx.html')
-
-
-profile_htmx = ProfileHTMX.as_view()
-
-
-class ProfileUpdate(TemplateResponseMixin, FormMixin, View):
-
-    template_name = 'profile_update_form.html'
+    template_name = 'profile/profile_update_form.html'
     form_class = UserUpdateForm
     user = None
 
-    def get(self, request, *args, **kwargs):
-        self.user = request.user
+    def get(self, *args, **kwargs):
+        self.user = self.request.user
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
@@ -100,6 +94,29 @@ class ProfileUpdate(TemplateResponseMixin, FormMixin, View):
         if self.user:
             kwargs['instance'] = self.user
         return kwargs
+
+
+form_update_profile = ProfileUpdateForm.as_view()
+
+
+class ProfileUpdate(TemplateResponseMixin, FormMixin, View):
+
+    template_name = 'profile/profile_update.html'
+    form_class = UserUpdateForm
+
+    user = None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.user:
+            kwargs['instance'] = self.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.user:
+            context['user'] = self.user
+        return context
 
     def post(self, request, *args, **kwargs):
         self.user = request.user
@@ -110,7 +127,8 @@ class ProfileUpdate(TemplateResponseMixin, FormMixin, View):
 
     def form_valid(self, form):
         update_user_from_db(self.user, form)
-        return redirect('profile_htmx')
+        context = self.get_context_data()
+        return self.render_to_response(context=context)
 
     def form_invalid(self, form):
         form_crispy = render_crispy_form(form, context=csrf(self.request))
