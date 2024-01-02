@@ -3,10 +3,9 @@
             id="emp"
             hx-target="#org-profile"
             hx-select="#org-profile"
-            hx-swap="outerHTMl"
             hx-push-url="{% url 'employees_list' pk=organization_id %}"
             class="btn">
-        сотрудники
+            сотрудники
     </button>
 
     <button hx-get="{% url 'events_list' pk=organization_id %}"
@@ -14,6 +13,6 @@
             hx-select="#org-profile"
             hx-push-url="{% url 'events_list' pk=organization_id %}"
             class="btn">
-        мероприятия
+            мероприятия
     </button>
 </p>

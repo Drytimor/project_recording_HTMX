@@ -1,0 +1,42 @@
+<div class="row"
+     id="row-main">
+
+    <!--Левая колонка-->
+    {% block left_col %}
+        <div class="col-2 pt-5">
+            <div class="p-3"></div>
+        </div>
+    {% endblock left_col %}
+
+    {% block central_col %}
+    <!--Центральная колонка-->
+        <div class="col-8 px-5 pt-5">
+            <div id="central-col">
+
+                {% if organizations_all %}
+
+                    <div id="org-list">
+                        {% for organization in organizations_all %}
+                            {% include 'organizations/pattern/organizations_all.html' %}
+                        {% endfor %}
+                    </div>
+
+                {% else %}
+
+                    <div>Пусто</div>
+
+                {% endif %}
+            </div>
+        </div>
+    {% endblock central_col %}
+
+    {% block right_col %}
+    <!--Правая колонка-->
+        <div class="col-2 pt-5">
+            <div class="p-3"></div>
+        </div>
+    {% endblock right_col %}
+
+</div>
+
+

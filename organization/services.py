@@ -86,7 +86,7 @@ def get_events_from_db(organization_id=None, event_id=None):
 
 def get_event_profile_from_db(event_id):
     queryset = (Events.objects.filter(id=event_id)
-                              .values('id', 'name', 'employees__name'))
+                              .values('id', 'name', 'organization__id', 'organization__name', 'employees__name'))
     event_profile = db_function(queryset)
     return event_profile
 

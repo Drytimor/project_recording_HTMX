@@ -3,15 +3,13 @@
 <html lang="en">
 
 <head>
- {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="{% static 'core/bootstrap5/css/bootstrap.css' %}" rel="stylesheet">
     <script defer src="{% static 'core/bootstrap5/js/bootstrap.bundle.js' %}"></script>
     <script defer src="{% static 'core/htmx/htmx.min.js' %}"></script>
     <script defer src="{% static 'core/js/custom_js.js' %}"></script>
-    <title> Главная </title>
-{% endblock head %}
+    <title>{% block title %} Главная {% endblock title %}</title>
 </head>
 
 <body style="background-color:white">
@@ -26,14 +24,20 @@
                         <a class="me-2 nav-link text-white"
                            role="button"
                            hx-get="{% url 'events_all' %}"
-                           hx-target="#central-col">мероприятия
+                           hx-target="#row-main"
+                           hx-swap="outerHTML"
+                           hx-push-url="{% url 'events_all' %}">
+                           мероприятия
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-white"
                            role="button"
-                           hx-get="{% url 'org_all' %}"
-                           hx-target="#central-col">организации
+                           hx-get="{% url 'organization_all' %}"
+                           hx-target="#row-main"
+                           hx-swap="outerHTML"
+                           hx-push-url="{% url 'organization_all' %}">
+                           организации
                         </a>
                     </li>
                 </ul>
@@ -94,7 +98,7 @@
         {% block central_col %}
         <!--Центральная колонка-->
             <div class="col-8 px-5 pt-5">
-                <div id="central-col" class="pt-5"></div>
+                <div id="central-col"></div>
             </div>
         {% endblock central_col %}
 
