@@ -1,5 +1,5 @@
 from organization.models import Organizations, Employees, Events, Records
-from organization.todo import db_function
+from organization.todo import db_function, create_card_record_event
 from django.db import transaction
 
 
@@ -112,14 +112,15 @@ def create_record_in_db(event, form):
     return record
 
 
-def get_event_and_all_records_from_db(event_id):
+def get_event_and_all_records_from_db(user_id, event_id):
     event = (Events.objects.filter(id=event_id)
-                           .prefetch_related('employees', 'record')
+                           .prefetch_related('employees')
                            .order_by('-record__datetime')
                            .get())
     employees = event.employees.all()
-    records = event.record.all()
-    return event, employees, records
+    records = event.record.values('id', 'limit_clients', 'quantity_clients', 'datetime', 'recordings__user__id')
+    card_record = create_card_record_event(user_id=user_id, queryset=records)
+    return event, employees, card_record
 
 
 def get_record_from_db(record_id):

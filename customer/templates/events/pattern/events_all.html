@@ -1,0 +1,10 @@
+<div id="event-info">
+    <div><label>Название</label>: {{ event.name }} </div>
+    <button class="btn"
+            hx-get="{% url 'event_info' org_pk=event.organization.id pk=event.id %}"
+            hx-target="#event-list"
+            hx-swap="outerHTML"
+            hx-push-url="{% url 'event_info' org_pk=event.organization.id pk=event.id %}">
+            перейти
+    </button>
+</div>

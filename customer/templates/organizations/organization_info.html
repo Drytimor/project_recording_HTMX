@@ -1,0 +1,17 @@
+{% extends 'organizations/organization_all.html' %}
+
+{% block title %} {{ organization.name }} {% endblock title %}
+
+
+{% block org_info %}
+
+    {% block org_bar %}
+        {% include 'organizations/organization_bar.html' %}
+    {% endblock org_bar %}
+
+
+        {% block org_profile %}
+            {% include 'organizations/pattern/organization_info.html' %}
+        {% endblock org_profile %}
+
+{% endblock org_info %}

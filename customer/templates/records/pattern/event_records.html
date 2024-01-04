@@ -1,0 +1,23 @@
+<div id="record-profile">
+    <p><label>Лимит участников</label>: {{ record.limit_clients }}</p>
+    <p><label>Количество участников</label>: {{ record.quantity_clients }}</p>
+    <p><label>Дата</label>: {{ record.datetime }}</p>
+
+    {% if record.recordings__user__id %}
+        <button class="btn"
+                hx-put="{% url 'record_cancel' pk=record.id user_pk=user.id %}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}" }'
+                hx-target="closest div"
+                hx-swap="outerHTML">
+                отменить
+        </button>
+    {% else %}
+        <button class="btn"
+                hx-put="{% url 'record_sign_up' pk=record.id %}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}" }'
+                hx-target="closest div"
+                hx-swap="outerHTML">
+                записаться
+        </button>
+    {% endif %}
+</div>

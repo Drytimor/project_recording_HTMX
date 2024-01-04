@@ -1,0 +1,20 @@
+{% extends 'events/org_events.html' %}
+
+
+{% block org_bar %}
+    {{ block.super }}
+{% endblock org_bar %}
+
+{% block event_profile %}
+    <div id="event-profile">
+
+        {% block event_info %}
+            {% include 'events/pattern/event_info.html' %}
+        {% endblock event_info %}
+
+        <div id="record-all">
+            {% block record_all %}
+            {% endblock record_all %}
+        </div>
+    </div>
+{% endblock event_profile %}

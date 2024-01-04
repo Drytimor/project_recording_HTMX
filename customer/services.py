@@ -1,5 +1,8 @@
-from organization.models import Organizations, Events
-from organization.todo import db_function, card_info_event
+from django.db.models import F
+
+from customer.models import StatusRecordingChoices, Recordings
+from organization.models import Organizations, Events, Records
+from organization.todo import db_function, create_card_event
 
 
 def get_organizations_all_from_db():
@@ -18,22 +21,31 @@ def get_events_all_from_db():
     return events
 
 
-def get_event_card(event_id):
-    event = (Events.objects.filter(id=event_id)
-             .prefetch_related('employees', 'record')
-             .select_related('organization')
-             .order_by('-record__datetime')
-             .get())
-    employees = event.employees.all()
-    records = event.record.all()
-    organization = event.organization
-    return organization, event, employees, records
-
-
 def get_event_card_from_db(event_id):
     queryset = (Events.objects.filter(id=event_id)
                               .values('id', 'name', 'organization__id',
                                       'organization__name', 'employees__id',
                                       'employees__name'))
-    event_card = card_info_event(queryset)
+    event_card = create_card_event(queryset)
     return event_card
+
+
+def get_user_records_from_db(user_id):
+    ...
+
+
+def sign_up_for_event(user, record_id):
+    record = Records.objects.filter(id=record_id)
+    user.recordings.create(record=record.get(),
+                           status_recording=StatusRecordingChoices.PAID, )
+
+    record.update(quantity_clients=F('quantity_clients') + 1)
+    return record.get()
+
+
+def cancel_recording(user_id, record_id):
+    record = Records.objects.filter(id=record_id)
+    Recordings.objects.filter(user=user_id, record=record_id).delete()
+    record.update(quantity_clients=F('quantity_clients') - 1)
+    return record.get()
+
