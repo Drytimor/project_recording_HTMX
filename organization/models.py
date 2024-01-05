@@ -76,6 +76,10 @@ class EventsManager(models.Manager):
 
 class Records(models.Model):
 
+    events = models.ForeignKey('events',
+                               on_delete=models.CASCADE,
+                               related_name='records')
+
     limit_clients = models.SmallIntegerField()
 
     quantity_clients = models.SmallIntegerField(default=0)
@@ -98,8 +102,6 @@ class Events(models.Model):
     employees = models.ManyToManyField('employees',
                                        verbose_name='Сотрудник',
                                        related_name='events')
-    record = models.ManyToManyField('records',
-                                    related_name='events')
 
     is_active = models.BooleanField(default=False)
 

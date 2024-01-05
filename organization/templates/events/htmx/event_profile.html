@@ -3,7 +3,7 @@
         {% block event_profile %}
             {% include 'events/event_update.html' %}
 
-            <button hx-get="{% url 'records_list' org_pk=organization_id pk=event_id %}"
+            <button hx-get="{% url 'records_list' org_pk=organization_id pk=event_id  %}"
                     hx-target="#record-profile"
                     hx-select="#record-profile"
                     hx-swap="outerHTML"

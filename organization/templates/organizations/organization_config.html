@@ -1,6 +1,5 @@
 <p>
     <button hx-get="{% url 'employees_list' pk=organization_id %}"
-            id="emp"
             hx-target="#org-profile"
             hx-select="#org-profile"
             hx-push-url="{% url 'employees_list' pk=organization_id %}"

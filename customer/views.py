@@ -1,10 +1,12 @@
-from django.views.generic.base import View, ContextMixin
+from django.http import HttpResponse
+from django.views.generic.base import View, ContextMixin, TemplateResponseMixin
 
 from customer.services import (get_organizations_all_from_db, get_events_all_from_db, get_organization_info_from_db,
-                               get_event_card_from_db, sign_up_for_event, cancel_recording, get_user_records_from_db)
+                               get_event_card_from_db, sign_up_for_event, cancel_recording, get_user_records_from_db,
+                               delete_recording_user_form_profile)
 
 from organization.mixins import CustomTemplateResponseMixin, CustomMixin
-from organization.services import (get_employees_from_db, get_events_from_db, get_event_and_all_records_from_db)
+from organization.services import (get_employees_from_db, get_events_from_db, get_event_and_all_records_from_db_for_customer)
 
 
 # CRUD organization
@@ -215,7 +217,7 @@ class EventRecords(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        self.event, self.employees, self.records = get_event_and_all_records_from_db(user_id=self.user_id,
+        self.event, self.employees, self.records = get_event_and_all_records_from_db_for_customer(user_id=self.user_id,
                                                                                      event_id=self.event_id)
         context = self.get_context_data()
         return self.render_to_response(context=context)
@@ -238,6 +240,8 @@ class EventRecords(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
             context['employees'] = self.employees
         if self.organization_id:
             context['organization_id'] = self.organization_id
+        if self.user_id:
+            context['user_pk'] = self.user_id
         return context
 
 
@@ -253,14 +257,14 @@ class RecordSignUp(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
 
     def put(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        user = self.request.user
-        self.record = sign_up_for_event(user=user, record_id=self.record_id)
+        self.record = sign_up_for_event(user_id=self.user_id, record_id=self.record_id)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
     def get_attr_from_request(self):
         attr = {
-            'record_id': 'pk'
+            'record_id': 'pk',
+            'user_id': 'user_pk'
         }
         return attr
 
@@ -268,6 +272,8 @@ class RecordSignUp(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
         context = super().get_context_data(**kwargs)
         if self.record:
             context['record'] = self.record
+        if self.user_id:
+            context['user_pk'] = self.user_id
         return context
 
 
@@ -297,6 +303,8 @@ class RecordCancel(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
         context = super().get_context_data(**kwargs)
         if self.record:
             context['record'] = self.record
+        if self.user_id:
+            context['user_pk'] = self.user_id
         return context
 
 
@@ -307,11 +315,11 @@ class RecordsUser(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
 
     template_name = 'records/user_records.html'
     response_htmx = True
-    records = None
+    user_records = None
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        self.records = get_user_records_from_db(user_id=self.user_id)
+        self.user_records = get_user_records_from_db(user_id=self.user_id)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
@@ -323,9 +331,29 @@ class RecordsUser(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.records:
-            context['records'] = self.records
+        if self.user_records:
+            context['user_records'] = self.user_records
+        if self.user_id:
+            context['user_pk'] = self.user_id
         return context
 
 
 records_user = RecordsUser.as_view()
+
+
+class RecordUserDelete(CustomMixin, TemplateResponseMixin, ContextMixin, View):
+
+    def delete(self, *args, **kwargs):
+        self.set_class_attributes_from_request()
+        delete_recording_user_form_profile(record_id=self.record_id, user_id=self.user_id)
+        return HttpResponse(status=200)
+
+    def get_attr_from_request(self):
+        attr = {
+            'record_id': 'pk',
+            'user_id': 'user_pk'
+        }
+        return attr
+
+
+record_user_delete = RecordUserDelete.as_view()

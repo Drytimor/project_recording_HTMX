@@ -1,8 +1,9 @@
 {% if user.is_authenticated %}
     <div>
         <button class="btn"
-                hx-get="{% url 'records_user' pk=user_id %}"
-                hx-target="#central-col">
+                hx-get="{% url 'records_user' pk=user.id %}"
+                hx-target="#central-col"
+                hx-push-url="{% url 'records_user' pk=user.id %}">
                 записи
         </button>
     </div>

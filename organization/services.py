@@ -33,8 +33,7 @@ def update_organization_in_db(organization, form):
 @transaction.atomic
 def delete_organization_from_db(organization_id):
     organization = Organizations.objects.get(id=organization_id)
-    for event in organization.events.all():
-        event.record.all().delete()
+    organization.events.all().delete()
     organization.delete()
 
 
@@ -100,27 +99,34 @@ def update_event_in_db(event, form):
 
 
 def delete_event_from_db(event):
-    event.record.all().delete()
     event.delete()
 
 
 @transaction.atomic
-def create_record_in_db(event, form):
+def create_record_in_db(event_id, form):
     data = form.cleaned_data
+    data['events_id'] = event_id
     record = Records.objects.create(**data)
-    event.record.add(record)
     return record
 
 
-def get_event_and_all_records_from_db(user_id, event_id):
+def get_event_and_all_records_from_db_for_customer(user_id, event_id):
     event = (Events.objects.filter(id=event_id)
                            .prefetch_related('employees')
-                           .order_by('-record__datetime')
                            .get())
     employees = event.employees.all()
-    records = event.record.values('id', 'limit_clients', 'quantity_clients', 'datetime', 'recordings__user__id')
+    records = event.records.values('id', 'limit_clients', 'quantity_clients', 'datetime', 'recordings__user__id')
     card_record = create_card_record_event(user_id=user_id, queryset=records)
     return event, employees, card_record
+
+
+def get_event_and_all_records_from_db_for_organization(event_id):
+    event = (Events.objects.filter(id=event_id)
+             .prefetch_related('employees')
+             .get())
+    employees = event.employees.all()
+    record = event.records.all()
+    return event, employees, record
 
 
 def get_record_from_db(record_id):

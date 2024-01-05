@@ -4,7 +4,7 @@
     <p><label>Дата</label>: {{ record.datetime }}</p>
 
     <button class="btn"
-            hx-put="{% url 'record_cancel' pk=record.id user_pk=user.id %}"
+            hx-put="{% url 'record_cancel' pk=record.id user_pk=user_pk %}"
             hx-headers='{"X-CSRFToken": "{{ csrf_token }}" }'
             hx-target="closest div"
             hx-swap="outerHTML">
