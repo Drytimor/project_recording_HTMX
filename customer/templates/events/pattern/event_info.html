@@ -1,0 +1,19 @@
+<div><label>Название</label>: {{ event.name }}</div>
+<div><label>Сотрудники</label>:
+  {% for employee in event.employees_event %}
+    <a hx-get="{% url 'employee_info' org_pk=organization_id pk=employee.id %}"
+       hx-target="#event-profile"
+       hx-swap="outerHTML"
+       hx-push-url="{% url 'employee_info' org_pk=organization_id pk=employee.id %}">
+       {{ employee.name }}
+    </a>
+  {% endfor %}
+</div>
+
+<button hx-get="{% url 'event_records' event_pk=event.id org_pk=organization_id %}"
+        class="btn"
+        hx-target="#record-all"
+        hx-push-url="{% url 'event_records' event_pk=event.id org_pk=organization_id %}"
+        hx-swap="innerHTML">
+        записи
+</button><br>

@@ -1,0 +1,18 @@
+{% extends 'organizations/organization_info.html' %}
+
+
+{% block org_bar %}
+    {{ block.super }}
+{% endblock org_bar %}
+
+{% block org_profile %}
+    <div id="emp-profile">
+        {% if employees %}
+            {% for employee in employees %}
+                {% include 'employees/pattern/org_employees.html' %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+{% endblock org_profile %}
+

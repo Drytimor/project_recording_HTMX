@@ -1,0 +1,17 @@
+{% extends 'events/events_all.html' %}
+
+
+{% block org_bar %}
+    {% include 'organizations/organization_bar.html' %}
+{% endblock org_bar %}
+
+{% block event_profile %}
+    <div id="event-profile">
+        {% if events %}
+            {% for event in events %}
+                {% include 'events/pattern/org_events.html' %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+{% endblock event_profile %}

@@ -1,22 +1,22 @@
 <div id="org-profile">
-        {% if event %}
-            {% block event_profile %}
-                {% include 'events/event_update.html' %}
+    {% if event %}
+        {% block event_profile %}
+            {% include 'events/event_update.html' %}
 
-                <button hx-get="{% url 'records_list' org_pk=organization_id pk=event_id %}"
-                        hx-target="#record-profile"
-                        hx-select="#record-profile"
-                        hx-swap="outerHTML"
-                        hx-push-url="{% url 'records_list' org_pk=organization_id pk=event_id %}"
-                        class="btn">
-                        записи
-                </button>
-            {% endblock event_profile %}
+            <button hx-get="{% url 'records_list' org_pk=organization_id pk=event_id  %}"
+                    hx-target="#record-profile"
+                    hx-select="#record-profile"
+                    hx-swap="outerHTML"
+                    hx-push-url="{% url 'records_list' org_pk=organization_id pk=event_id %}"
+                    class="btn">
+                    записи
+            </button>
+        {% endblock event_profile %}
 
-            {% block record_profile %}
-                <div id="record-profile">
+        {% block record_profile %}
+            <div id="record-profile">
 
-                </div>
-            {% endblock record_profile %}
-        {% endif %}
-    </div>
+            </div>
+        {% endblock record_profile %}
+    {% endif %}
+</div>

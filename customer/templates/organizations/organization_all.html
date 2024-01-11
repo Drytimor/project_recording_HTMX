@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %} организации {% endblock title %}
+
+
+{% block left_col %}
+<!--Левая колонка-->
+    <div class="col-2 pt-5">
+        <div class="p-3"></div>
+    </div>
+{% endblock left_col %}
+
+{% block central_col %}
+<!--Центральная колонка-->
+    <div class="col-8 px-5 pt-5">
+        <div id="central-col">
+
+            {% block org_info %}
+                <div id="org-list">
+                    {% if organizations_all %}
+
+                        {% block org_bar %}
+                        {% endblock org_bar %}
+
+                        {% for organization in organizations_all %}
+                            {% include 'organizations/pattern/organizations_all.html' %}
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div>Пусто</div>
+
+                    {% endif %}
+                </div>
+            {% endblock org_info %}
+
+        </div>
+    </div>
+{% endblock central_col %}
+
+{% block right_col %}
+<!--Правая колонка-->
+    <div class="col-2 pt-5">
+        <div class="p-3"></div>
+    </div>
+{% endblock right_col %}
+
+{% block script %}
+{% endblock script %}

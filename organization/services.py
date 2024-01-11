@@ -1,5 +1,6 @@
+from django.db.models import Prefetch
+from customer.models import Recordings
 from organization.models import Organizations, Employees, Events, Records
-from organization.todo import db_function
 from django.db import transaction
 
 
@@ -33,8 +34,7 @@ def update_organization_in_db(organization, form):
 @transaction.atomic
 def delete_organization_from_db(organization_id):
     organization = Organizations.objects.get(id=organization_id)
-    for event in organization.events.all():
-        event.record.all().delete()
+    organization.events.all().delete()
     organization.delete()
 
 
@@ -85,10 +85,12 @@ def get_events_from_db(organization_id=None, event_id=None):
 
 
 def get_event_profile_from_db(event_id):
-    queryset = (Events.objects.filter(id=event_id)
-                              .values('id', 'name', 'employees__name'))
-    event_profile = db_function(queryset)
-    return event_profile
+    event = (Events.objects.filter(id=event_id)
+                           .prefetch_related(
+                            Prefetch(lookup='employees',
+                                     to_attr='employees_event'))
+                           .get())
+    return event
 
 
 @transaction.atomic
@@ -100,26 +102,55 @@ def update_event_in_db(event, form):
 
 
 def delete_event_from_db(event):
-    event.record.all().delete()
     event.delete()
 
 
 @transaction.atomic
-def create_record_in_db(event, form):
+def create_record_in_db(event_id, form):
     data = form.cleaned_data
+    data['events_id'] = event_id
     record = Records.objects.create(**data)
-    event.record.add(record)
     return record
 
 
-def get_event_and_all_records_from_db(event_id):
+def get_event_and_all_records_from_db_for_customer(user_id, event_id):
+
     event = (Events.objects.filter(id=event_id)
-                           .prefetch_related('employees', 'record')
-                           .order_by('-record__datetime')
+                           .prefetch_related(
+                            Prefetch(lookup='employees',
+                                     to_attr='employees_event'))
                            .get())
-    employees = event.employees.all()
-    records = event.record.all()
-    return event, employees, records
+    if user_id:
+        records = event.records.prefetch_related(
+                                   Prefetch(lookup='recordings',
+                                            queryset=Recordings.objects.select_related('user')
+                                                                       .only('user_id'),
+                                            to_attr='user_recordings'))
+
+        # цикл проходит по всем записям зарегистрированных пользователей на мероприятие
+        # если не находит там id вошедшего пользователя
+        # добавляет в queryset поле registered_user в True,
+        # иначе устанавливает registered_user в False
+
+        for recordings in records:
+            registered_user_flag = any(user_id == _recordings.user.id for _recordings in recordings.user_recordings)
+            recordings.registered_user = registered_user_flag
+    else:
+        records = event.records.all()
+    return event, records
+
+
+def get_event_and_all_records_from_db_for_organization(event_id):
+
+    event = (Events.objects.filter(id=event_id)
+                           .prefetch_related(
+                            Prefetch(lookup='records',
+                                     to_attr='records_event'),
+                            Prefetch(lookup='employees',
+                                     to_attr='employees_event'))
+                           .get())
+
+    return event
 
 
 def get_record_from_db(record_id):

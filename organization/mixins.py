@@ -1,5 +1,6 @@
 from django.views.generic.base import TemplateResponseMixin
 import os.path
+from django.core.cache import cache
 
 
 class CustomMixin:
@@ -17,6 +18,21 @@ class CustomMixin:
     def get_attr_from_request(self):
         attr = {}
         return attr
+
+    def get_or_set_key_redis_user_id_from_request(self):
+        session_key_user = self.request.session.session_key
+        user_id_from_cache = cache.get(key=session_key_user)
+        if user_id_from_cache is None:
+            if self.request.user.id:
+                cache.set(key=session_key_user,
+                          value=self.request.user.id,
+                          timeout=60**2 * 12)
+            else:
+                return
+        else:
+            return user_id_from_cache
+
+        return cache.get(key=session_key_user)
 
 
 class CustomTemplateResponseMixin(TemplateResponseMixin):
@@ -39,7 +55,6 @@ class CustomTemplateResponseMixin(TemplateResponseMixin):
             template=self.get_template_names(),
             context=context,
             using=self.template_engine,
-            headers=self.set_headers_to_response(),
             **response_kwargs,
         )
 

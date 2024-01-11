@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'customer',
     'crispy_forms',
     'crispy_bootstrap5',
-    'crispy_forms_foundation',
     'django_extensions',
     'allauth',
     'allauth.account',

@@ -1,11 +1,7 @@
 {% extends 'base.html' %}
+{% load cache %}
 
-{% block head %}
-{{ block.super }}
-
-    <title>Профиль</title>
-
-{% endblock head %}
+{% block title %} Профиль {% endblock title %}
 
 
 {% block left_col %}
@@ -19,18 +15,20 @@
 
 {% block central_col %}
     <div class="col-8 px-5 pt-5">
-        <div id="central-col"
-             hx-target="this"
-             hx-swap="innerHTML">
-            <div><label>Логин</label>: {{ user.username}}</div>
-            <div><label>Имя</label>: {{ user.first_name}}</div>
-            <div><label>Фамилия</label>: {{ user.last_name}}</div>
+        <div id="central-col">
+            <div id="user-profile">
 
-            <button hx-get="{% url 'profile_form_update' %}"
-                    class="btn">
-                    Редактировать
-            </button>
+                <div><label>Логин</label>: {{ user.username}}</div>
+                <div><label>Имя</label>: {{ user.first_name}}</div>
+                <div><label>Фамилия</label>: {{ user.last_name}}</div>
 
+                <button hx-get="{% url 'profile_form_update' %}"
+                        hx-target="#user-profile"
+                        class="btn">
+                        Редактировать
+                </button>
+
+            </div>
         </div>
     </div>
 {% endblock central_col %}

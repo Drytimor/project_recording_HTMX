@@ -1,0 +1,14 @@
+<div id="org-info">
+    <div><label>Название</label>: {{ organization.name }}</div>
+    <div>
+        <label>Категория</label>: {{ organization.category }}
+        <button hx-get="{% url 'organization_info' pk=organization.id %}"
+                hx-target="#org-list"
+                hx-select="#central-col"
+                hx-swap="outerHTML"
+                hx-push-url="{% url 'organization_info' pk=organization.id %}"
+                class="btn">
+                перейти
+        </button>
+    </div>
+</div><br>

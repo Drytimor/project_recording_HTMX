@@ -15,7 +15,7 @@ organization_urlpatterns = [
     ])),
 
     path('create/', organization_create, name='organization_create'),
-    path('profile/<int:pk>', organization_profile, name='organization_profile'),
+    path('profile/', organization_profile, name='organization_profile'),
 
     path('get/', include([
         path('<int:pk>/', get_organization, name='get_organization'),

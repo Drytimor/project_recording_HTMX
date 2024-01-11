@@ -9,6 +9,8 @@ from django.template import loader
 from django.template.context_processors import csrf
 from allauth.account.views import SignupView
 from .services import update_user_from_db, delete_user_from_db
+from django.core.cache import cache
+from allauth.account.views import LogoutView
 
 
 class Home(TemplateResponseMixin, ContextMixin, View):
@@ -26,9 +28,10 @@ home = Home.as_view()
 class AuthRedirect(View):
 
     def get(self, *args, **kwargs):
-        return HttpResponse(content='OK',
-                            headers={'HX-Trigger-After-Swap': 'AuthUser'}
-                            )
+        return HttpResponse(headers={
+                                'HX-Trigger-After-Swap': 'AuthUser',
+                                'HX-Refresh': 'true'
+                            })
 
 
 auth_redirect = AuthRedirect.as_view()

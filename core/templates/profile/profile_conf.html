@@ -1,6 +1,16 @@
 {% if user.is_authenticated %}
     <div>
         <button class="btn"
+                hx-get="{% url 'events_user' %}"
+                hx-select="#user-events-list"
+                hx-target="#central-col"
+                hx-push-url="{% url 'events_user' %}">
+                записи
+        </button>
+    </div>
+
+    <div>
+        <button class="btn"
                 hx-get="{% url 'account_email' %}"
                 hx-target="#central-col">
                 почта
@@ -40,11 +50,11 @@
 
     <div>
         <button class="btn"
-                hx-get="{% url 'organization_profile' pk=user.id %}"
+                hx-get="{% url 'organization_profile' %}"
                 hx-target="#central-col"
                 hx-select="#central-col"
                 hx-swap="outerHTMl"
-                hx-push-url="{% url 'organization_profile' pk=user.id %}">
+                hx-push-url="{% url 'organization_profile' %}">
                 организация
         </button>
     </div>

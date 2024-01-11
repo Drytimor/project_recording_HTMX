@@ -1,0 +1,10 @@
+{% extends 'employees/org_employees.html' %}
+
+
+{% block org_bar %}
+    {{ block.super }}
+{% endblock org_bar %}
+
+{% block org_profile %}
+    {% include 'employees/pattern/employee_info.html' %}
+{% endblock org_profile %}

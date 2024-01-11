@@ -1,6 +1,5 @@
 from django.db import models
 from django.db.models import Q
-
 from allauth_app.settings import AUTH_USER_MODEL
 
 
@@ -77,6 +76,10 @@ class EventsManager(models.Manager):
 
 class Records(models.Model):
 
+    events = models.ForeignKey('events',
+                               on_delete=models.CASCADE,
+                               related_name='records')
+
     limit_clients = models.SmallIntegerField()
 
     quantity_clients = models.SmallIntegerField(default=0)
@@ -92,15 +95,16 @@ class Events(models.Model):
     organization = models.ForeignKey('organizations',
                                      on_delete=models.CASCADE,
                                      related_name='events')
-
     name = models.CharField(verbose_name='Название',
                             max_length=250)
 
     employees = models.ManyToManyField('employees',
                                        verbose_name='Сотрудник',
                                        related_name='events')
-    record = models.ManyToManyField('records',
-                                    related_name='events')
+
+    price = models.DecimalField(verbose_name='Цена',
+                                max_digits=10,
+                                decimal_places=2)
 
     is_active = models.BooleanField(default=False)
 

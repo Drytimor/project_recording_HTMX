@@ -135,8 +135,8 @@ class MyCustomChangePasswordForm(ChangePasswordForm):
         self.helper.form_id = 'change-password-user-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('account_change_password'),
-            'hx-target': '#modal-form',
-            'hx-swap': 'innerHTML',
+            'hx-target': '#change-password-user-form',
+            'hx-swap': 'outerHTML',
         }
         self.helper.add_input(Submit(name='submit',
                                      value='Изменить пароль'))
@@ -180,8 +180,9 @@ class MyCustomAddEmailForm(AddEmailForm):
         self.helper.form_id = 'email-account-user-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('account_email'),
-            'hx-target': '#modal-form',
-            'hx-swap': 'innerHTML',
+            'hx-target': '#email-account-user-form',
+            'hx-swap': 'outerHTML',
+            'hx-select': '#email-account-user-form'
         }
         self.helper.add_input(Submit(name='action_add',
                                      value='Изменить Email'))
@@ -191,10 +192,10 @@ class UserUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_id = 'central-col'
+        self.helper.form_id = 'user-update-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('profile_update'),
-            'hx-target': 'this',
+            'hx-target': '#user-update-form',
             'hx-swap': 'outerHTML',
         }
         self.helper.add_input(Submit(name='submit',
@@ -204,8 +205,8 @@ class UserUpdateForm(forms.ModelForm):
                                      value='Отмена',
                                      css_class='btn',
                                      hx_get=reverse_lazy('profile'),
-                                     hx_target="#central-col",
-                                     hx_select="#central-col",
+                                     hx_target="#user-profile",
+                                     hx_select="#user-profile",
                                      hx_swap="outerHTML"))
 
     class Meta:
