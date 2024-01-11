@@ -109,21 +109,14 @@ class OrganizationProfile(CustomMixin, CustomTemplateResponseMixin, ContextMixin
     template_name = 'organizations/organization_profile.html'
     response_htmx = True
     organization = None
-    organization_id = None
 
     def get(self, *args, **kwargs):
-        self.set_class_attributes_from_request()
+        self.user_id = self.get_or_set_key_redis_user_id_from_request()
         self.organization = get_organization_from_db(user_id=self.user_id)
         if self.organization:
             self.organization_id = self.organization.pk
         context = self.get_context_data()
         return self.render_to_response(context=context)
-
-    def get_attr_from_request(self):
-        attr = {
-            'user_id': 'pk'
-        }
-        return attr
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -971,13 +964,11 @@ class RecordsList(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
 
     template_name = 'records/record_list.html'
     response_htmx = True
-    records = None
     event = None
-    employees = None
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        self.event, self.employees, self.records = get_event_and_all_records_from_db_for_organization(event_id=self.event_id)
+        self.event = get_event_and_all_records_from_db_for_organization(event_id=self.event_id)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
@@ -990,16 +981,12 @@ class RecordsList(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.records:
-            context['records'] = self.records
         if self.event_id:
             context['event_id'] = self.event_id
         if self.organization_id:
             context['organization_id'] = self.organization_id
         if self.event:
             context['event'] = self.event
-        if self.employees:
-            context['employees'] = self.employees
         return context
 
 

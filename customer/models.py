@@ -1,6 +1,6 @@
 from django.db import models
 from allauth_app.settings import AUTH_USER_MODEL
-from organization.models import Records
+from organization.models import Records, Events
 
 
 class StatusRecordingChoices(models.TextChoices):
@@ -32,4 +32,22 @@ class Recordings(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['record', 'user'],
                                     name=f"unique_{db_table}_user")
+        ]
+
+
+class AssignedEvents(models.Model):
+
+    user = models.ForeignKey(AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='assigned_events')
+
+    event = models.ForeignKey(Events,
+                              on_delete=models.CASCADE,
+                              related_name='assigned_events')
+
+    class Meta:
+        db_table = 'assigned_events'
+        constraints = [
+           models.UniqueConstraint(fields=['user', 'event'],
+                                   name=f'unique_{db_table}_user')
         ]

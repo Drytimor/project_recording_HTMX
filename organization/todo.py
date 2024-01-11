@@ -1,6 +1,5 @@
-from collections import defaultdict, namedtuple
-
-
+from collections import defaultdict
+"""
 def db_function(queryset):
     d = defaultdict(list)
     for dict_db in queryset:
@@ -35,7 +34,7 @@ def create_card_record_event(user_id, queryset):
     card_records = []
 
     for list_records in dict_all_records.values():
-        dict_record = defaultdict(bool)
+        dict_record = {}
         for d in list_records:
             if d.pop('recordings__user__id') == user_id:
                 dict_record['recordings__user__id'] = True
@@ -45,3 +44,25 @@ def create_card_record_event(user_id, queryset):
         card_records.append(dict_record)
 
     return card_records
+"""
+
+
+def create_card_record_user(user_id, event_recordings, event_records):
+
+    dict_users_id = defaultdict(list)
+
+    for recording in event_recordings:
+        dict_users_id[recording.record.id].append(recording.user.id)
+
+    for record in event_records:
+        record.registered_user = False
+        if record.id in dict_users_id:
+            record.registered_user = any(user_id == _user_id for _user_id in dict_users_id[record.id])
+
+    return event_records
+
+
+def set_field_assigned(events, assigned_events_user):
+    for event in events:
+        event.assigned = any(event.id in assign_id for assign_id in assigned_events_user)
+    return events

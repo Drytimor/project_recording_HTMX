@@ -95,7 +95,6 @@ class Events(models.Model):
     organization = models.ForeignKey('organizations',
                                      on_delete=models.CASCADE,
                                      related_name='events')
-
     name = models.CharField(verbose_name='Название',
                             max_length=250)
 

@@ -6,8 +6,8 @@
                 <div id="event-profile">
                     <div><label>Название</label>: {{ event.name }}</div>
                     <div><label>Сотрудники</label>:
-                        {% for employees_name in employees %}
-                            {{ employees_name | default:'not'}}
+                        {% for employees in event.employees_event %}
+                            {{ employees.name | default:'not'}}
                         {% endfor %}
                     </div>
 
@@ -48,8 +48,8 @@
                 </button><br>
 
                 <div id="records_list">
-                    {% if records %}
-                        {% for record in records %}
+                    {% if event.records_event %}
+                        {% for record in event.records_event %}
                             {% include 'records/record_create.html' %}
                         {% endfor %}
                     {% endif %}
