@@ -102,6 +102,10 @@ class Events(models.Model):
                                        verbose_name='Сотрудник',
                                        related_name='events')
 
+    price = models.DecimalField(verbose_name='Цена',
+                                max_digits=10,
+                                decimal_places=2)
+
     is_active = models.BooleanField(default=False)
 
     objects = EventsManager()

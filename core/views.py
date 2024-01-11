@@ -28,9 +28,10 @@ home = Home.as_view()
 class AuthRedirect(View):
 
     def get(self, *args, **kwargs):
-        return HttpResponse(content='OK',
-                            headers={'HX-Trigger-After-Swap': 'AuthUser'}
-                            )
+        return HttpResponse(headers={
+                                'HX-Trigger-After-Swap': 'AuthUser',
+                                'HX-Refresh': 'true'
+                            })
 
 
 auth_redirect = AuthRedirect.as_view()

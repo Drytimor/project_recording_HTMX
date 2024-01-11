@@ -16,17 +16,19 @@
 {% block central_col %}
     <div class="col-8 px-5 pt-5">
         <div id="central-col">
+            <div id="user-profile">
 
-            <div><label>Логин</label>: {{ user.username}}</div>
-            <div><label>Имя</label>: {{ user.first_name}}</div>
-            <div><label>Фамилия</label>: {{ user.last_name}}</div>
+                <div><label>Логин</label>: {{ user.username}}</div>
+                <div><label>Имя</label>: {{ user.first_name}}</div>
+                <div><label>Фамилия</label>: {{ user.last_name}}</div>
 
-            <button hx-get="{% url 'profile_form_update' %}"
-                    hx-target="#central-col"
-                    class="btn">
-                    Редактировать
-            </button>
+                <button hx-get="{% url 'profile_form_update' %}"
+                        hx-target="#user-profile"
+                        class="btn">
+                        Редактировать
+                </button>
 
+            </div>
         </div>
     </div>
 {% endblock central_col %}

@@ -36,6 +36,7 @@
 {% block content %}
 
 {% if emailaddresses %}
+        <div id="mail-form">
         {% if current_emailaddress %}
             <p>
                 Ваш Email: <a href="mailto:{{ current_emailaddress.email }}">{{ current_emailaddress.email }}</a> подтвержден
@@ -47,13 +48,14 @@
             </p>
             <form id="account-email"
                   hx-post="{% url 'account_email' %}"
-                  hx-target="#modal-form"
-                  hx-swap="innerHTML">
+                  hx-target="#mail-form"
+                  hx-swap="outerHTML">
                 {% csrf_token %}
                 <input type="hidden" name="email" value="{{ new_emailaddress.email }}">
                 <input tabindex="0" id="email-confirmation-submit" type="submit" name="action_send" class="btn btn-secondary" value="Отправить подтверждение">
             </form>
         {% endif %}
+        </div>
     {% else %}
         {% include "account/snippets/warn_no_email.html" %}
     {% endif %}

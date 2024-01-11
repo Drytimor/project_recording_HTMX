@@ -55,7 +55,6 @@ class CustomTemplateResponseMixin(TemplateResponseMixin):
             template=self.get_template_names(),
             context=context,
             using=self.template_engine,
-            headers=self.set_headers_to_response(),
             **response_kwargs,
         )
 

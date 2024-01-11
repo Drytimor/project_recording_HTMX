@@ -329,7 +329,17 @@ class RecordSignUp(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
         self.set_class_attributes_from_request()
         self.record = sign_up_for_event(user_id=self.user_id, record_id=self.record_id)
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
+
+    def set_headers_to_response(self):
+        headers = super().set_headers_to_response()
+        if not self.user_id:
+            headers.update({
+                'HX-Reswap': 'innerHTML',
+                'HX-Retarget': f'#record-error{self.record_id}'})
+        return headers
 
     def get_attr_from_request(self):
         attr = {
@@ -341,9 +351,9 @@ class RecordSignUp(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
         context = super().get_context_data(**kwargs)
         if self.record:
             context['record'] = self.record
-        if self.user_id:
-            context['user_pk'] = self.user_id
         return context
+
+
 
 
 record_sign_up = RecordSignUp.as_view()
