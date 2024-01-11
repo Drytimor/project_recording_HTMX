@@ -1,0 +1,33 @@
+{% extends 'profile/profile.html' %}
+
+
+{% block central_col %}
+
+    <div class="col-8 px-5 pt-5">
+        <div id="central-col">
+
+            {% block user-events-list %}
+                <div id="user-events-list">
+                    {% if user_events %}
+                        {% for event in user_events %}
+
+                            <div id="user-event-card">
+
+                                {% include 'events/pattern/user_events.html' %}
+
+                                <div id="user-records-list">
+                                    {% block user_records_list %}
+                                    {% endblock user_records_list %}
+                                </div>
+
+                            </div><br>
+
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endblock user-events-list %}
+
+        </div>
+    </div>
+
+{% endblock central_col %}

@@ -1,0 +1,17 @@
+{% if user_events %}
+
+    <div id="user-events-list">
+        {% for event in user_events %}
+
+            <div id="user-event-card">
+
+                {% include 'events/pattern/user_events.html' %}
+
+                <div id="user-records-list"></div>
+
+            </div><br>
+
+        {% endfor %}
+    </div>
+
+{% endif %}

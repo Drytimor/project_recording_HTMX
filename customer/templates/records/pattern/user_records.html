@@ -1,0 +1,10 @@
+<p><label>Лимит участников</label>: {{ record.limit_clients }}</p>
+<p><label>Количество участников</label>: {{ record.quantity_clients }}</p>
+<p><label>Дата</label>: {{ record.datetime }}</p>
+
+<button class="btn"
+        hx-delete="{% url 'record_user_delete' pk=record.id user_pk=user_pk event_pk=event_pk %}"
+        hx-target="closest div"
+        hx-swap="outerHTML">
+        отменить
+</button>

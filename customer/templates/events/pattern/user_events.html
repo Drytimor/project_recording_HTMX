@@ -1,0 +1,52 @@
+<div><label>Организация</label>:
+    <a hx-get="{% url 'organization_info' pk=event.organization.id %}"
+       hx-swap="innerHTML"
+       hx-target="#row-main"
+       hx-push-url="{% url 'organization_info' pk=event.organization.id %}">
+       {{ event.organization.name }}
+    </a>
+</div>
+<div><label>Название</label>: {{ event.name }}</div>
+<div><label>Сотрудники</label>:
+    {% for employee in event.employees_event %}
+        {{ employee.name }}
+    {% endfor %}
+
+</div>
+
+<div>
+    <button class="btn"
+            hx-get="{% url 'records_user' pk=user_pk event_pk=event.id %}"
+            hx-target="next div"
+            hx-swap="innerHTML">
+            мои записи
+    </button>
+
+    <button class="btn"
+            hx-get="{% url 'event_records_user' user_pk=user_pk event_pk=event.id %}"
+            hx-target="next div"
+            hx-swap="innerHTML">
+            все записи
+    </button>
+
+    <button class="btn"
+            hx-delete="{% url 'delete_all_records_user' user_pk=user_pk event_pk=event.id %}"
+            hx-swap="outerHTML"
+            hx-target="closest #user-event-card"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}" }'>
+            удалить
+    </button>
+
+    {% if event.assigned %}
+
+        {% include 'events/pattern/assigned_event.html' %}
+
+    {% else %}
+
+        {% include 'events/pattern/not_assigned_event.html' %}
+
+    {% endif %}
+
+</div>
+
+

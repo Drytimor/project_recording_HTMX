@@ -1,0 +1,15 @@
+{% extends 'events/user_events.html' %}
+
+
+
+{% block user_records_list %}
+    {% if user_records %}
+
+        {% for record in user_records %}
+            <div id="user-record">
+                {% include 'records/pattern/user_records.html' %}
+            </div>
+        {% endfor %}
+
+    {% endif %}
+{% endblock user_records_list %}

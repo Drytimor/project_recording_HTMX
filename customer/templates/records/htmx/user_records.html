@@ -1,0 +1,10 @@
+{% if user_records %}
+
+    {% for record in user_records %}
+        <div id="user-record">
+            {% include 'records/pattern/user_records.html' %}
+        </div>
+    {% endfor %}
+
+{% endif %}
+
