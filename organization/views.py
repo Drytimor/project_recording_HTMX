@@ -256,7 +256,9 @@ class EmployeeCreate(CustomMixin, CustomTemplateResponseMixin, FormMixin, View):
     def form_valid(self, form):
         self.employee = create_employee_in_db(self.organization_id, form)
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def form_invalid(self, form):
         form_crispy = render_crispy_form(form, context=csrf(self.request))
@@ -288,7 +290,9 @@ class EmployeesCreateForm(CustomMixin, CustomTemplateResponseMixin, FormMixin, V
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def get_attr_from_request(self):
         attr = {
@@ -469,7 +473,9 @@ class GetEmployee(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
         self.set_class_attributes_from_request()
         self.employee = get_employees_from_db(employee_id=self.employee_id)
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def get_attr_from_request(self):
         attr = {
@@ -543,7 +549,9 @@ class EventsCreate(CustomMixin, CustomTemplateResponseMixin, FormMixin, View):
     def form_valid(self, form):
         self.event = create_event_in_db(self.organization_id, form)
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def form_invalid(self, form):
         form_crispy = render_crispy_form(form, context=csrf(self.request))
@@ -575,7 +583,9 @@ class EventCreateForm(CustomMixin, CustomTemplateResponseMixin, FormMixin, View)
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def get_attr_from_request(self):
         attr = {
@@ -770,7 +780,9 @@ class GetEvent(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
         self.set_class_attributes_from_request()
         self.event = get_event_profile_from_db(event_id=self.event_id)
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def get_attr_from_request(self):
         attr = {
@@ -845,7 +857,9 @@ class RecordCreate(CustomMixin, CustomTemplateResponseMixin, FormMixin, View):
     def form_valid(self, form):
         self.record = create_record_in_db(self.event_id, form)
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def form_invalid(self, form):
         form_crispy = render_crispy_form(form, context=csrf(self.request))
@@ -875,7 +889,9 @@ class RecordCreateForm(CustomMixin, CustomTemplateResponseMixin, FormMixin, View
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def get_attr_from_request(self):
         attr = {
@@ -908,7 +924,9 @@ class GetRecord(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
         self.set_class_attributes_from_request()
         self.record = get_record_from_db(record_id=self.record_id)
         context = self.get_context_data()
-        return self.render_to_response(context=context)
+        headers = self.set_headers_to_response()
+        return self.render_to_response(context=context,
+                                       headers=headers)
 
     def get_attr_from_request(self):
         attr = {

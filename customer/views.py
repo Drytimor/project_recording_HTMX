@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
+from django.core.paginator import Paginator
 from django.views.generic.base import View, ContextMixin, TemplateResponseMixin
 from django.core.cache import cache
 from customer.services import (get_organizations_all_from_db, get_events_all_from_db, get_organization_info_from_db,
@@ -10,7 +10,7 @@ from customer.services import (get_organizations_all_from_db, get_events_all_fro
 
 from organization.mixins import CustomTemplateResponseMixin, CustomMixin
 from organization.services import (get_employees_from_db, get_events_from_db, get_event_and_all_records_from_db_for_customer)
-
+from django.views.generic import ListView
 
 # CRUD organization
 
@@ -163,18 +163,34 @@ class EventsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
     template_name = 'events/events_all.html'
     response_htmx = True
     events = None
+    page_obj = None
+    elided_page_range = None
 
     def get(self, *args, **kwargs):
+        self.set_class_attributes_from_request()
         self.user_id = self.get_or_set_key_redis_user_id_from_request()
         self.events = get_events_all_from_db(user_id=self.user_id)
+
+        self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.events,
+                                                                       per_page=2,
+                                                                       number=self.page_number)
         context = self.get_context_data()
         return self.render_to_response(context=context)
+
+    def get_attr_from_request(self):
+        attr = {
+            'page_number': 'page'
+        }
+        return attr
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.events:
-            context['events'] = self.events
+            context['events'] = self.page_obj.object_list
             context['user_pk'] = self.user_id
+        if self.page_obj:
+            context['page_obj'] = self.page_obj
+            context['elided_page_range'] = self.elided_page_range
         return context
 
 

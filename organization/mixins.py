@@ -1,15 +1,16 @@
+from django.core.paginator import Paginator
 from django.views.generic.base import TemplateResponseMixin
 import os.path
 from django.core.cache import cache
 
 
 class CustomMixin:
-
     organization_id = None
     employee_id = None
     event_id = None
     record_id = None
     user_id = None
+    page_number = None
 
     def set_class_attributes_from_request(self):
         for attr, param in self.get_attr_from_request().items():
@@ -26,7 +27,7 @@ class CustomMixin:
             if self.request.user.id:
                 cache.set(key=session_key_user,
                           value=self.request.user.id,
-                          timeout=60**2 * 12)
+                          timeout=60 ** 2 * 12)
             else:
                 return
         else:
@@ -34,9 +35,22 @@ class CustomMixin:
 
         return cache.get(key=session_key_user)
 
+    @staticmethod
+    def create_pagination(object_list, per_page, number,
+                          orphans=1, on_each_side=1, on_ends=1):
+
+        paginator = Paginator(object_list=object_list,
+                              per_page=per_page,
+                              orphans=orphans)
+
+        page_obj = paginator.get_page(number=number)
+        elided_page_range = paginator.get_elided_page_range(number=number,
+                                                            on_each_side=on_each_side,
+                                                            on_ends=on_ends)
+        return page_obj, elided_page_range
+
 
 class CustomTemplateResponseMixin(TemplateResponseMixin):
-
     response_htmx = False
 
     def render_to_response(self, context, **response_kwargs):

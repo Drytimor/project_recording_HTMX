@@ -104,7 +104,8 @@ class Events(models.Model):
 
     price = models.DecimalField(verbose_name='Цена',
                                 max_digits=10,
-                                decimal_places=2)
+                                decimal_places=2,
+                                null=True)
 
     is_active = models.BooleanField(default=False)
 

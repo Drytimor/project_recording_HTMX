@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from organization.models import Categories, Organizations, Employees, Events, Records
 import datetime
 
+
 class CreateOrganizationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):

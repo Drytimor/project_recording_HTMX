@@ -43,14 +43,34 @@ def get_organization_info_from_db(organization_id):
     return organization
 
 
-def get_events_all_from_db(user_id):
-    events = Events.objects.select_related('organization')
+def _get_id_event_gen(events):
+    id_events = (event[0] for event in events)
+    yield from id_events
+
+
+def _get_all_events_gen(events):
+    all_events = ((event.id, event) for event in events)
+    yield from all_events
+
+
+def _get_events_all_from_db(user_id):
+
+    events = cache.get_or_set(key='events_all',
+                              default=Events.objects.select_related('organization'),
+                              timeout=60)
+
+    events_all = [(event.id, event) for event in events]
+    events = cache.get_many(keys=_get_id_event_gen(events_all)).values()
+    if not events:
+        cache.set_many({k:v for k, v in events_all}, timeout=30)
+        events = cache.get_many(keys=_get_id_event_gen(events_all)).values()
+
     if user_id:
         assigned_events_user = get_or_set_assigned_user_events_from_cache(user_id=user_id)
 
         events = set_field_assigned(events=events,
                                     assigned_events_user=assigned_events_user)
-    return events
+    return list(events)
 
 
 @transaction.atomic

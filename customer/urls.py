@@ -32,7 +32,7 @@ organizations_urlpatterns = [
 
 events_urlpatterns = [
 
-    path('all/', events_all, name='events_all'),
+    path('all/<str:page>', events_all, name='events_all'),
     path('assigned_events/<int:event_pk>', assigned_events, name='assigned_events'),
     path('profile/', include([
 

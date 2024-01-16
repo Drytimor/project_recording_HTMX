@@ -85,12 +85,13 @@ def get_events_from_db(organization_id=None, event_id=None):
 
 
 def get_event_profile_from_db(event_id):
-    event = (Events.objects.filter(id=event_id)
-                           .prefetch_related(
-                            Prefetch(lookup='employees',
-                                     to_attr='employees_event'))
-                           .get())
-    return event
+    if event_id:
+        event = (Events.objects.filter(id=event_id)
+                               .prefetch_related(
+                                Prefetch(lookup='employees',
+                                         to_attr='employees_event'))
+                               .get())
+        return event
 
 
 @transaction.atomic
