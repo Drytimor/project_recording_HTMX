@@ -13,7 +13,7 @@ from organization.mixins import CustomMixin, CustomTemplateResponseMixin
 from organization.services import (create_organization_from_db, get_organization_from_db, delete_organization_from_db,
                                    update_organization_in_db, get_employees_from_db, create_employee_in_db,
                                    update_employee_in_db, delete_employee_from_db, create_event_in_db,
-                                   update_event_in_db, get_events_from_db, delete_event_from_db,get_event_profile_from_db,
+                                   update_event_in_db, get_events_from_db, delete_event_from_db, get_event_profile_from_db,
                                    create_record_in_db, get_record_from_db, delete_record_from_db, update_record_in_db,
                                    get_event_and_all_records_from_db_for_organization,
                                    )
@@ -814,7 +814,7 @@ class EventsDelete(CustomMixin, View):
     def post(self, *args, **kwargs):
         self.set_class_attributes_from_request()
         event = get_events_from_db(event_id=self.event_id)
-        delete_event_from_db(event)
+        delete_event_from_db(event= event, event_id=self.event_id)
         return HttpResponse(status=200)
 
     def get_attr_from_request(self):

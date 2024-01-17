@@ -1,5 +1,6 @@
 from django.db.models import Prefetch
 from customer.models import Recordings
+from customer.services import delete_event_from_cache
 from organization.models import Organizations, Employees, Events, Records
 from django.db import transaction
 
@@ -102,8 +103,9 @@ def update_event_in_db(event, form):
     event.employees.set(event_employees)
 
 
-def delete_event_from_db(event):
+def delete_event_from_db(event, event_id):
     event.delete()
+    delete_event_from_cache(event_id=event_id)
 
 
 @transaction.atomic

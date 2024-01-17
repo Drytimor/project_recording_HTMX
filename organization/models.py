@@ -90,6 +90,11 @@ class Records(models.Model):
         db_table = 'records'
 
 
+class PaymentTariffChoices(models.TextChoices):
+    PAID = "paid", "платный"
+    FREE = "free", "бесплатный"
+
+
 class Events(models.Model):
 
     organization = models.ForeignKey('organizations',
@@ -101,6 +106,9 @@ class Events(models.Model):
     employees = models.ManyToManyField('employees',
                                        verbose_name='Сотрудник',
                                        related_name='events')
+
+    status_tariff = models.CharField(max_length=4,
+                                     choices=PaymentTariffChoices.choices)
 
     price = models.DecimalField(verbose_name='Цена',
                                 max_digits=10,
@@ -116,3 +124,5 @@ class Events(models.Model):
 
     class Meta:
         db_table = 'events'
+        ordering = ['name']
+

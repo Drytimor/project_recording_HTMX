@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'django_filters',
 ]
 
 SITE_ID = 2
@@ -215,3 +216,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+# Redis
+
+CACHE_KEY_USER_ASSIGNED_EVENTS = 'assigned_user_{user_id}_events'
+CACHE_KEY_EVENT_ID = 'event_id_{event_id}'
+CACHE_KEY_FILTER_NAME = 'filter_{filter_name}'

@@ -1,19 +1,18 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from django.core.paginator import Paginator
 from django.views.generic.base import View, ContextMixin, TemplateResponseMixin
-from django.core.cache import cache
+
+from customer.filters import EventsFilter
 from customer.services import (get_organizations_all_from_db, get_events_all_from_db, get_organization_info_from_db,
                                get_event_card_from_db, sign_up_for_event, cancel_recording, get_user_records_from_db,
                                delete_recording_user_form_profile, get_user_events_from_db,
                                get_user_event_records_from_db, assigned_event_to_user, delete_assigned_event_from_db,
-                               delete_event_and_all_records_user_from_db)
+                               delete_event_and_all_records_user_from_db, get_all_events_using_filter)
 
 from organization.mixins import CustomTemplateResponseMixin, CustomMixin
 from organization.services import (get_employees_from_db, get_events_from_db, get_event_and_all_records_from_db_for_customer)
-from django.views.generic import ListView
+
 
 # CRUD organization
-
 class OrganizationsAll(CustomTemplateResponseMixin, ContextMixin, View):
 
     template_name = 'organizations/organization_all.html'
@@ -165,12 +164,13 @@ class EventsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
     events = None
     page_obj = None
     elided_page_range = None
+    filter_events = None
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
         self.user_id = self.get_or_set_key_redis_user_id_from_request()
         self.events = get_events_all_from_db(user_id=self.user_id)
-
+        self.filter_events = EventsFilter().form
         self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.events,
                                                                        per_page=2,
                                                                        number=self.page_number)
@@ -188,6 +188,7 @@ class EventsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
         if self.events:
             context['events'] = self.page_obj.object_list
             context['user_pk'] = self.user_id
+            context['filter'] = self.filter_events
         if self.page_obj:
             context['page_obj'] = self.page_obj
             context['elided_page_range'] = self.elided_page_range
@@ -195,6 +196,30 @@ class EventsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
 
 
 events_all = EventsAll.as_view()
+
+
+class EventsAllFilter(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
+
+    template_name = 'events/filter_events_all.html'
+    response_htmx = True
+    events = None
+
+    def get(self, *args, **kwargs):
+        self.user_id = self.get_or_set_key_redis_user_id_from_request()
+        data = self.request.GET
+        self.events = get_all_events_using_filter(user_id=self.user_id, data=data)
+        context = self.get_context_data()
+        return self.render_to_response(context=context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.events:
+            context['events'] = self.events
+            context['user_pk'] = self.user_id
+        return context
+
+
+events_all_filter = EventsAllFilter.as_view()
 
 
 class AssignedEvents(CustomMixin, TemplateResponseMixin, ContextMixin, View):

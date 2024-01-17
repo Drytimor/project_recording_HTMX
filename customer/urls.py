@@ -3,7 +3,7 @@ from django.urls import path, include
 from customer.views import (organizations_all, events_all, organization_info, organization_events, event_info,
                             organization_employees, employee_info, event_records, record_sign_up, record_cancel,
                             records_user, record_user_delete, events_user, event_records_user, assigned_events,
-                            delete_all_records_user)
+                            delete_all_records_user, events_all_filter)
 
 organizations_urlpatterns = [
 
@@ -33,6 +33,7 @@ organizations_urlpatterns = [
 events_urlpatterns = [
 
     path('all/<str:page>', events_all, name='events_all'),
+    path('filter/', events_all_filter, name='events_all_filter'),
     path('assigned_events/<int:event_pk>', assigned_events, name='assigned_events'),
     path('profile/', include([
 
