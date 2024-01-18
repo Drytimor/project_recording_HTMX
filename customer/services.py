@@ -1,6 +1,6 @@
 from django.db.models import F, Prefetch, Count
 from django.db import transaction
-from allauth_app.settings import CACHE_KEY_USER_ASSIGNED_EVENTS, CACHE_KEY_EVENT_ID
+from allauth_app.settings import CACHE_KEY_USER_ASSIGNED_EVENTS, CACHE_KEY_MODEL_OBJECT_ID, CACHE_KEY_ALL_OBJECT_FROM_DB
 from customer.filters import EventsFilter
 from customer.models import StatusRecordingChoices, Recordings, AssignedEvents
 from organization.models import Organizations, Events, Records
@@ -30,7 +30,7 @@ def delete_assigned_user_events_from_cache(user_id):
 
 
 def delete_event_from_cache(event_id):
-    cache_key_event = CACHE_KEY_EVENT_ID.format(event_id=event_id)
+    cache_key_event = CACHE_KEY_MODEL_OBJECT_ID.format(model='Events', object_id=event_id)
     cache.delete(cache_key_event)
 
 
@@ -58,18 +58,21 @@ def _get_id_events_gen(events):
 def get_events_all_from_db(user_id):
     """Возвращает список всех мероприятий из кеша либо из базы"""
 
-    events_from_db = cache.get_or_set(key='events_all',
+    cache_key_events_all = CACHE_KEY_ALL_OBJECT_FROM_DB.format(model='Events')
+    cache_key_event = CACHE_KEY_MODEL_OBJECT_ID
+
+    events_from_db = cache.get_or_set(key=cache_key_events_all,
                                       default=Events.objects.select_related('organization'),
                                       timeout=60)
 
-    cache_key_event = CACHE_KEY_EVENT_ID
-    events_id = _get_id_events_gen(events_from_db)
-    events = list(cache.get_many(keys=[cache_key_event.format(event_id=_id) for _id in events_id]).values())
+    events = cache.get_many(keys=[cache_key_event.format(model='Events', object_id=_event.id) for _event in events_from_db]).values()
 
     if not events:
-        events_all = _get_all_events_gen(events_from_db)
-        cache.set_many({cache_key_event.format(event_id=_id): _event for _id, _event in events_all}, timeout=60)
+        cache.set_many({cache_key_event.format(model='Events', object_id=_event.id): _event for _event in events_from_db}, timeout=60)
         events = events_from_db
+
+    else:
+        events = list(events)
 
     if user_id:
         assigned_events_user = get_or_set_assigned_user_events_from_cache(user_id=user_id)
@@ -81,11 +84,11 @@ def get_events_all_from_db(user_id):
 
 def get_all_events_using_filter(user_id, data):
 
-    events = cache.get_or_set(key='events_all',
+    cache_key_events_all = CACHE_KEY_ALL_OBJECT_FROM_DB.format(model='Events')
+
+    events = cache.get_or_set(key=cache_key_events_all,
                               default=Events.objects.select_related('organization'),
                               timeout=60)
-
-    cache_key_event = CACHE_KEY_EVENT_ID
 
     filter_events = EventsFilter(data=data,
                                  queryset=events,
@@ -97,8 +100,6 @@ def get_all_events_using_filter(user_id, data):
 
         events = set_field_assigned(events=events,
                                     assigned_events_user=assigned_events_user)
-
-    cache.set_many({cache_key_event.format(event_id=event.id): event for event in events}, timeout=60)
 
     return events
 
