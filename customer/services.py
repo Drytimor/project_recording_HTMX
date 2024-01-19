@@ -4,24 +4,40 @@ from allauth_app.settings import CACHE_KEY_USER_ASSIGNED_EVENTS, CACHE_KEY_MODEL
 from customer.filters import EventsFilter
 from customer.models import StatusRecordingChoices, Recordings, AssignedEvents
 from organization.models import Organizations, Events, Records
-from organization.todo import create_card_record_user, set_field_assigned
+from organization.todo import create_card_record_user
 from django.core.cache import cache
 
 
-def get_or_set_assigned_user_events_from_cache(user_id, set_cache=True):
+def get_or_set_assigned_user_events_from_cache(user_id):
 
     cache_key_user_assigned_events = CACHE_KEY_USER_ASSIGNED_EVENTS.format(user_id=user_id)
-    assigned_events_user = cache.get(key=cache_key_user_assigned_events)
+    assigned_events_user_from_cache = cache.get(key=cache_key_user_assigned_events)
 
-    if assigned_events_user is None:
-        assigned_events_user = (AssignedEvents.objects.filter(user_id=user_id)
-                                .values_list('event__id'))
-        if set_cache:
-            cache.set(key=cache_key_user_assigned_events,
-                      value=assigned_events_user,
-                      timeout=60 ** 2 * 6)
+    if assigned_events_user_from_cache is None:
+        assigned_events_user_from_db = (AssignedEvents.objects.filter(user_id=user_id)
+                                                              .values_list('event__id'))
 
-    return assigned_events_user
+        cache.set(key=cache_key_user_assigned_events,
+                  value=assigned_events_user_from_db,
+                  timeout=60**2 * 6)
+
+        return assigned_events_user_from_db
+
+    return assigned_events_user_from_cache
+
+
+def set_field_assigned(events, assigned_events_user):
+    for event in events:
+        event.assigned = any(event.id in assign_id for assign_id in assigned_events_user)
+    return events
+
+
+def sets_in_events_filed_assigned(user_id, events):
+
+    assigned_events_user = get_or_set_assigned_user_events_from_cache(user_id=user_id)
+    events_with_field_assigned = set_field_assigned(events=events, assigned_events_user=assigned_events_user)
+
+    return events_with_field_assigned
 
 
 def delete_assigned_user_events_from_cache(user_id):
@@ -45,63 +61,53 @@ def get_organization_info_from_db(organization_id):
     return organization
 
 
-def _get_all_events_gen(events):
-    all_events = ((event.id, event) for event in events)
-    yield from all_events
-
-
-def _get_id_events_gen(events):
-    id_events = (event.id for event in events)
-    yield from id_events
-
-
 def get_events_all_from_db(user_id):
     """Возвращает список всех мероприятий из кеша либо из базы"""
 
     cache_key_events_all = CACHE_KEY_ALL_OBJECT_FROM_DB.format(model='Events')
-    cache_key_event = CACHE_KEY_MODEL_OBJECT_ID
+    unique_cache_key_event = CACHE_KEY_MODEL_OBJECT_ID
 
     events_from_db = cache.get_or_set(key=cache_key_events_all,
                                       default=Events.objects.select_related('organization'),
                                       timeout=60)
 
-    events = cache.get_many(keys=[cache_key_event.format(model='Events', object_id=_event.id) for _event in events_from_db]).values()
+    events_object_from_cache = cache.get_many(keys=[unique_cache_key_event.format(model='Events', object_id=_event.id) for _event in events_from_db]).values()
 
-    if not events:
-        cache.set_many({cache_key_event.format(model='Events', object_id=_event.id): _event for _event in events_from_db}, timeout=60)
-        events = events_from_db
+    if not events_object_from_cache:
+        cache.set_many({unique_cache_key_event.format(model='Events', object_id=_event.id): _event for _event in events_from_db}, timeout=60)
+        all_events = events_from_db
 
     else:
-        events = list(events)
+        all_events = list(events_object_from_cache)
 
     if user_id:
-        assigned_events_user = get_or_set_assigned_user_events_from_cache(user_id=user_id)
+        all_events_with_field_assigned = sets_in_events_filed_assigned(user_id=user_id, events=all_events)
 
-        events = set_field_assigned(events=events,
-                                    assigned_events_user=assigned_events_user)
-    return events
+        return all_events_with_field_assigned
+
+    return all_events
 
 
 def get_all_events_using_filter(user_id, data):
 
     cache_key_events_all = CACHE_KEY_ALL_OBJECT_FROM_DB.format(model='Events')
 
-    events = cache.get_or_set(key=cache_key_events_all,
-                              default=Events.objects.select_related('organization'),
-                              timeout=60)
+    events_from_db = cache.get_or_set(key=cache_key_events_all,
+                                      default=Events.objects.select_related('organization'),
+                                      timeout=60)
 
     filter_events = EventsFilter(data=data,
-                                 queryset=events,
+                                 queryset=events_from_db,
                                  filter_name='events_all')
-    events = filter_events.qs
+
+    filtered_events = filter_events.qs
 
     if user_id:
-        assigned_events_user = get_or_set_assigned_user_events_from_cache(user_id=user_id)
+        filtered_events_with_field_assigned = sets_in_events_filed_assigned(user_id=user_id, events=filtered_events)
 
-        events = set_field_assigned(events=events,
-                                    assigned_events_user=assigned_events_user)
+        return filtered_events_with_field_assigned
 
-    return events
+    return filtered_events
 
 
 @transaction.atomic
@@ -217,11 +223,6 @@ def delete_recording_user_form_profile(user_id, event_id, record_id):
     record = Records.objects.filter(id=record_id)
     user_recordings = (Recordings.objects.filter(user=user_id, record=record_id)
                                          .annotate(count_recordings=Count('user__recordings__id')))
-
-    assigned_events_user = get_or_set_assigned_user_events_from_cache(user_id=user_id, set_cache=False)
-
-    is_assigned_event = any(event_id in _id for _id in assigned_events_user)
-    count_user_recordings = user_recordings[0].count_recordings
 
     user_recordings.delete()
     record.update(quantity_clients=F('quantity_clients') - 1)

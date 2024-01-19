@@ -1,4 +1,5 @@
 <div><label>Название</label>: {{ event.name }}</div>
+<div><label>Вход</label>: {{ event.status_tariff }}</div>
 <div><label>Сотрудники</label>:
   {% for employee in event.employees_event %}
     <a hx-get="{% url 'employee_info' org_pk=organization_id pk=employee.id %}"

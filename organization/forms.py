@@ -107,7 +107,7 @@ class CreateEventForm(forms.ModelForm):
 
     class Meta:
         model = Events
-        fields = ('name', 'employees')
+        fields = ('name', 'employees', 'status_tariff')
 
 
 class UpdateEventForm(forms.ModelForm):
@@ -150,7 +150,7 @@ class UpdateEventForm(forms.ModelForm):
 
     class Meta:
         model = Events
-        fields = ('name', 'employees')
+        fields = ('name', 'employees', 'status_tariff')
 
 
 class CreateEmployeeForm(forms.ModelForm):

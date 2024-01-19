@@ -1,5 +1,6 @@
 <div id="event-info">
     <div><label>Название</label>: {{ event.name }} </div>
+    <div><label>Вход</label>: {{ event.status_tariff }}</div>
     <div>
         <button class="btn"
                 hx-get="{% url 'event_info' org_pk=event.organization.id pk=event.id %}"

@@ -1,6 +1,7 @@
 {% if event %}
     <div id="event-profile">
         <div><label>Название</label>: {{ event.name }}</div>
+        <div><label>Вход</label>: {{ event.status_tariff }}</div>
         <div><label>Сотрудники</label>:
             {% for employee in event.employees_event %}
                 {{ employee.name | default:'not'}}

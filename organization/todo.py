@@ -62,7 +62,4 @@ def create_card_record_user(user_id, event_recordings, event_records):
     return event_records
 
 
-def set_field_assigned(events, assigned_events_user):
-    for event in events:
-        event.assigned = any(event.id in assign_id for assign_id in assigned_events_user)
-    return events
+
