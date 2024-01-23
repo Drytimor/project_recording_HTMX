@@ -23,20 +23,20 @@
                     <li class="nav-item">
                         <a class="me-2 nav-link text-white"
                            role="button"
-                           hx-get="{% url 'events_all' page=1 %}"
+                           hx-get="{% url 'events_all' %}"
                            hx-target="#row-main"
                            hx-swap="outerHTML"
-                           hx-push-url="{% url 'events_all' page=1 %}">
+                           hx-push-url="true">
                            мероприятия
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-white"
                            role="button"
-                           hx-get="{% url 'organization_all' %}"
+                           hx-get="{% url 'organizations_all' %}"
                            hx-target="#row-main"
                            hx-swap="outerHTML"
-                           hx-push-url="{% url 'organization_all' %}">
+                           hx-push-url="{% url 'organizations_all' %}">
                            организации
                         </a>
                     </li>

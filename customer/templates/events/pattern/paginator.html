@@ -3,13 +3,18 @@
 
         {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link"
-                   hx-get="{% url 'events_all' page=page_obj.previous_page_number %}"
-                   hx-target="#row-main"
-                   hx-swap="outerHTML"
-                   hx-push-url="{% url 'events_all' page=page_obj.previous_page_number %}">
-                   «
-                </a>
+
+                {% block link_previous %}
+                    <a class="page-link"
+                       hx-get="{% url 'events_all' %}?page_number={{ page_obj.previous_page_number }}"
+                       hx-target="#event-list"
+                       hx-select="#event-list"
+                       hx-swap="outerHTML"
+                       hx-push-url="true">
+                       «
+                    </a>
+                {% endblock link_previous %}
+
             </li>
         {% else %}
             <li class="page-item disabled">
@@ -31,13 +36,18 @@
             {% else %}
                 <li class="page-item"
                     aria-current="page">
-                    <a class="page-link"
-                       hx-get="{% url 'events_all' page=number %}"
-                       hx-target="#row-main"
-                       hx-swap="outerHTML"
-                       hx-push-url="{% url 'events_all' page=number %}">
-                       {{ number }}
-                    </a>
+
+                    {% block links_page_number %}
+                        <a class="page-link"
+                           hx-get="{% url 'events_all' %}?page_number={{ number }}"
+                           hx-target="#event-list"
+                           hx-select="#event-list"
+                           hx-swap="outerHTML"
+                           hx-push-url="true">
+                           {{ number }}
+                        </a>
+                    {% endblock links_page_number %}
+
                 </li>
             {% endif %}
 
@@ -45,13 +55,18 @@
 
         {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link"
-                   hx-get="{% url 'events_all' page=page_obj.next_page_number %}"
-                   hx-target="#row-main"
-                   hx-swap="outerHTML"
-                   hx-push-url="{% url 'events_all' page=page_obj.next_page_number %}">
-                   »
-                </a>
+
+                {% block link_next %}
+                    <a class="page-link"
+                       hx-get="{% url 'events_all' %}?page_number={{ page_obj.next_page_number }}"
+                       hx-target="#event-list"
+                       hx-select="#event-list"
+                       hx-swap="outerHTML"
+                       hx-push-url="true">
+                       »
+                    </a>
+                {% endblock link_next %}
+
             </li>
         {% else %}
             <li class="page-item disabled">

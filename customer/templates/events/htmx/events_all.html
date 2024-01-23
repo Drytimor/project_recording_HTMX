@@ -1,4 +1,5 @@
 {% load crispy_forms_tags %}
+
 <div class="row"
      id="row-main">
 
@@ -38,11 +39,13 @@
     <!--Правая колонка-->
         <div class="col-2 pt-5">
             <div class="p-3">
-                <form hx-get="{% url 'events_all_filter' %}"
-                      hx-target="#central-col"
-                      hx-swap="innerHTML">
+                <form hx-get="{% url 'events_all_filter' page=1 %}"
+                      hx-target="#event-list"
+                      hx-params="*"
+                      hx-swap="outerHTML"
+                      hx-push-url="true">
 
-                      {{ filter | crispy }}
+                      {{ filter_form | crispy }}
 
                     <input class="btn" type="submit" value="Найти">
                 </form>

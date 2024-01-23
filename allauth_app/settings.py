@@ -222,5 +222,5 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 CACHE_KEY_ALL_OBJECT_FROM_DB = '{model}_all'
 CACHE_KEY_USER_ASSIGNED_EVENTS = 'assigned_user_{user_id}_events'
 CACHE_KEY_MODEL_OBJECT_ID = 'model:{model}_object_id:{object_id}'
-CACHE_KEY_FILTER_NAME = 'filter_{filter_name}_'
+CACHE_KEY_FILTER_NAME = 'filter_{filter_name}'
 CACHE_UNIQUE_KEY_FILTER_NAME = 'queryset_{filter_name}_id{queryset_id}'

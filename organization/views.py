@@ -111,7 +111,7 @@ class OrganizationProfile(CustomMixin, CustomTemplateResponseMixin, ContextMixin
     organization = None
 
     def get(self, *args, **kwargs):
-        self.user_id = self.get_or_set_key_redis_user_id_from_request()
+        self.user_id = self.get_or_set_user_id_from_cache()
         self.organization = get_organization_from_db(user_id=self.user_id)
         if self.organization:
             self.organization_id = self.organization.pk

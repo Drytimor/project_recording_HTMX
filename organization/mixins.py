@@ -10,7 +10,8 @@ class CustomMixin:
     event_id = None
     record_id = None
     user_id = None
-    page_number = None
+    page_obj = None
+    elided_page_range = None
 
     def set_class_attributes_from_request(self):
         for attr, param in self.get_attr_from_request().items():
@@ -20,31 +21,37 @@ class CustomMixin:
         attr = {}
         return attr
 
-    def get_or_set_key_redis_user_id_from_request(self):
+    def get_or_set_user_id_from_cache(self):
         session_key_user = self.request.session.session_key
         user_id_from_cache = cache.get(key=session_key_user)
+        user_id = self.request.user.id
         if user_id_from_cache is None:
-            if self.request.user.id:
+            if user_id:
                 cache.set(key=session_key_user,
-                          value=self.request.user.id,
+                          value=user_id,
                           timeout=60 ** 2 * 12)
             else:
                 return
         else:
             return user_id_from_cache
 
-        return cache.get(key=session_key_user)
+        return user_id
 
-    @staticmethod
-    def create_pagination(object_list, per_page, number,
-                          orphans=1, on_each_side=1, on_ends=1):
+    def create_form_filter(self, filter_class):
+        return filter_class().form
+
+    def create_pagination(self, object_list, per_page=1, orphans=1,
+                          on_each_side=1, on_ends=1):
+
+        page_number = self.request.GET.get('page_number') or self.kwargs.get('page') or 1
 
         paginator = Paginator(object_list=object_list,
                               per_page=per_page,
                               orphans=orphans)
 
-        page_obj = paginator.get_page(number=number)
-        elided_page_range = paginator.get_elided_page_range(number=number,
+        page_obj = paginator.get_page(number=page_number)
+
+        elided_page_range = paginator.get_elided_page_range(number=page_number,
                                                             on_each_side=on_each_side,
                                                             on_ends=on_ends)
         return page_obj, elided_page_range
