@@ -3,12 +3,11 @@ from django.urls import path, include, re_path
 from customer.views import (organizations_all, events_all, organization_info, organization_events, event_info,
                             organization_employees, employee_info, event_records, record_sign_up, record_cancel,
                             records_user, record_user_delete, events_user, event_records_user, assigned_events,
-                            delete_all_records_user, events_all_filter, organization_all_filter)
+                            delete_all_records_user)
 
 organizations_urlpatterns = [
 
-    re_path(r'^all/(?:page-(?P<page_number>[0-9]+)/)?$', organizations_all, name='organizations_all'),
-    path('filter/<str:page>', organization_all_filter, name='organization_all_filter'),
+    path('all/<str:page>/', organizations_all, name='organizations_all'),
     path('info/<int:pk>', organization_info, name='organization_info'),
     path('events/', include([
 
@@ -33,8 +32,7 @@ organizations_urlpatterns = [
 
 events_urlpatterns = [
 
-    re_path(r'^all/(?:page-(?P<page_number>[0-9]+)/)?$', events_all, name='events_all'),
-    path('filter/<str:page>', events_all_filter, name='events_all_filter'),
+    path('all/<str:page>/', events_all, name='events_all'),
     path('assigned_events/<int:event_pk>', assigned_events, name='assigned_events'),
     path('profile/', include([
 
@@ -42,7 +40,7 @@ events_urlpatterns = [
         path('delete/<int:user_pk>/<int:event_pk>/', delete_all_records_user, name='delete_all_records_user'),
         path('records/', include([
 
-            path('user/<int:pk>/<int:event_pk>/', records_user, name='records_user'),
+            path('user/<str:page>/<int:user_pk>/<int:event_pk>/', records_user, name='records_user'),
             path('event/<int:user_pk>/<int:event_pk>/', event_records_user, name='event_records_user'),
             path('delete/<int:pk>/<int:user_pk>/<int:event_pk>/', record_user_delete, name='record_user_delete')
 

@@ -1,8 +1,8 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import View, ContextMixin, TemplateResponseMixin
 
-from customer.filters import EventsFilter, OrganizationFilter
-from customer.services import (get_organizations_all_from_db, get_events_all_from_db, get_organization_info_from_db,
+from customer.filters import RecordsListUserFilter
+from customer.services import (get_organization_info_from_db,
                                get_event_card_from_db, sign_up_for_event, cancel_recording, get_user_records_from_db,
                                delete_recording_user_form_profile, get_user_events_from_db,
                                get_user_event_records_from_db, assigned_event_to_user, delete_assigned_event_from_db,
@@ -21,25 +21,22 @@ class OrganizationsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, V
     response_htmx = True
     organizations = None
     filter_form = None
+    params = None
 
     def get(self, *args, **kwargs):
-        self.organizations = get_organizations_all_from_db()
-        self.filter_form = self.create_form_filter(filter_class=OrganizationFilter)
+        self.organizations, self.filter_form, self.params = get_all_organization_using_filter(data=self.request.GET)
         self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.organizations)
-
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         if self.organizations:
             context.update({
                 'organizations': self.page_obj.object_list,
-                'filter_form': self.filter_form
-            })
-
-        if self.page_obj:
-            context.update({
+                'filter_form': self.filter_form,
+                'params': self.params,
                 'page_obj': self.page_obj,
                 'elided_page_range': self.elided_page_range,
             })
@@ -48,35 +45,6 @@ class OrganizationsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, V
 
 
 organizations_all = OrganizationsAll.as_view()
-
-
-class OrganizationAllFilter(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
-
-    template_name = 'organizations/filter_organizations_all.html'
-    response_htmx = True
-    organizations = None
-    params = None
-
-    def get(self, *args, **kwargs):
-        self.organizations, self.params = get_all_organization_using_filter(data=self.request.GET)
-        self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.organizations)
-        context = self.get_context_data()
-        return self.render_to_response(context=context)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.organizations:
-            context.update({
-                'organizations': self.page_obj.object_list,
-                'params': self.params,
-                'page_obj': self.page_obj,
-                'elided_page_range': self.elided_page_range,
-            })
-            
-        return context
-
-
-organization_all_filter = OrganizationAllFilter.as_view()
 
 
 class OrganizationInfo(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
@@ -208,26 +176,27 @@ class EventsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
     response_htmx = True
     events = None
     filter_form = None
+    params = None
 
     def get(self, *args, **kwargs):
         self.user_id = self.get_or_set_user_id_from_cache()
-        self.events = get_events_all_from_db(user_id=self.user_id)
-        self.filter_form = self.create_form_filter(filter_class=EventsFilter)
+
+        self.events, self.filter_form, self.params = get_all_events_using_filter(user_id=self.user_id,
+                                                                                 data=self.request.GET)
+
         self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.events)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         if self.events:
             context.update({
                 'events': self.page_obj.object_list,
                 'user_pk': self.user_id,
-                'filter_form': self.filter_form
-            })
-
-        if self.page_obj:
-            context.update({
+                'filter_form': self.filter_form,
+                'params': self.params,
                 'page_obj': self.page_obj,
                 'elided_page_range': self.elided_page_range,
             })
@@ -236,46 +205,6 @@ class EventsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
 
 
 events_all = EventsAll.as_view()
-
-
-class EventsAllFilter(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
-
-    template_name = 'events/filter_events_all.html'
-    response_htmx = True
-    events = None
-    params = None
-
-    def get(self, *args, **kwargs):
-        self.user_id = self.get_or_set_user_id_from_cache()
-
-        self.events, self.params = get_all_events_using_filter(user_id=self.user_id,
-                                                               data=self.request.GET)
-
-        self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.events)
-
-        context = self.get_context_data()
-
-        return self.render_to_response(context=context)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.events:
-            context.update({
-                'events': self.page_obj.object_list,
-                'user_pk': self.user_id
-            })
-
-        if self.page_obj:
-            context.update({
-                'page_obj': self.page_obj,
-                'elided_page_range': self.elided_page_range,
-                'params': self.params
-            })
-
-        return context
-
-
-events_all_filter = EventsAllFilter.as_view()
 
 
 class AssignedEvents(CustomMixin, TemplateResponseMixin, ContextMixin, View):
@@ -490,25 +419,41 @@ class RecordsListUser(CustomMixin, TemplateResponseMixin, ContextMixin, View):
 
     template_name = 'records/htmx/user_records.html'
     user_records = None
+    filter_form = None
+    params = None
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        self.user_records = get_user_records_from_db(user_id=self.user_id,
-                                                     event_id=self.event_id)
+
+        self.user_records, self.filter_form, self.params = get_user_records_from_db(
+                                                                user_id=self.user_id,
+                                                                event_id=self.event_id,
+                                                                data=self.request.GET)
+
+        self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.user_records)
+
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
     def get_attr_from_request(self):
         attr = {
-            'user_id': 'pk',
+            'user_id': 'user_pk',
             'event_id': 'event_pk'
         }
         return attr
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         if self.user_records:
-            context['user_records'] = self.user_records
+            context.update({
+                'user_records': self.page_obj.object_list,
+                'filter_form': self.filter_form,
+                'params': self.params,
+                'page_obj': self.page_obj,
+                'elided_page_range': self.elided_page_range,
+            })
+
         if self.user_id:
             context['user_pk'] = self.user_id
         if self.event_id:
@@ -573,9 +518,8 @@ class RecordDeleteUser(CustomMixin, TemplateResponseMixin, ContextMixin, View):
 
     def delete(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        flag = delete_recording_user_form_profile(record_id=self.record_id,
-                                                  event_id=self.event_id,
-                                                  user_id=self.user_id)
+        delete_recording_user_form_profile(record_id=self.record_id,
+                                           user_id=self.user_id)
 
         return HttpResponse(status=200)
 

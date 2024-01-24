@@ -22,7 +22,7 @@
                             {% include 'organizations/pattern/organizations_all.html' %}
                         {% endfor %}
 
-                        {% include 'organizations/pattern/paginator.html' %}
+                        {% include 'organizations/pattern/paginator_organizations_all.html' %}
 
                     {% else %}
 
@@ -39,8 +39,10 @@
     <!--Правая колонка-->
         <div class="col-2 pt-5">
             <div class="p-3">
-                <form hx-get="{% url 'organization_all_filter' page=1 %}"
+
+                <form hx-get="{% url 'organizations_all' page=1 %}"
                       hx-target="#org-list"
+                      hx-select="#org-list"
                       hx-params="*"
                       hx-swap="outerHTML"
                       hx-push-url="true">
@@ -49,6 +51,7 @@
 
                     <input class="btn" type="submit" value="Найти">
                 </form>
+
             </div>
         </div>
     {% endblock right_col %}

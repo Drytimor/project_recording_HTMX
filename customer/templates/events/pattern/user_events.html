@@ -17,9 +17,9 @@
 
 <div>
     <button class="btn"
-            hx-get="{% url 'records_user' pk=user_pk event_pk=event.id %}"
-            hx-target="next div"
-            hx-swap="innerHTML">
+            hx-get="{% url 'records_user' page=1 user_pk=user_pk event_pk=event.id %}"
+            hx-target="#user-records-list-with-filters"
+            hx-swap="outerHTML">
             мои записи
     </button>
 

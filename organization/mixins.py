@@ -24,8 +24,8 @@ class CustomMixin:
     def get_or_set_user_id_from_cache(self):
         session_key_user = self.request.session.session_key
         user_id_from_cache = cache.get(key=session_key_user)
-        user_id = self.request.user.id
         if user_id_from_cache is None:
+            user_id = self.request.user.id
             if user_id:
                 cache.set(key=session_key_user,
                           value=user_id,
@@ -36,9 +36,6 @@ class CustomMixin:
             return user_id_from_cache
 
         return user_id
-
-    def create_form_filter(self, filter_class):
-        return filter_class().form
 
     def create_pagination(self, object_list, per_page=1, orphans=1,
                           on_each_side=1, on_ends=1):

@@ -75,6 +75,11 @@ class EventsManager(models.Manager):
     pass
 
 
+class StatusOpeningChoices(models.TextChoices):
+    OPEN = "open", "открытый"
+    CLOSED = "close", "закрытый"
+
+
 class Records(models.Model):
 
     events = models.ForeignKey('events',
@@ -84,6 +89,10 @@ class Records(models.Model):
     limit_clients = models.SmallIntegerField()
 
     quantity_clients = models.SmallIntegerField(default=0)
+
+    status_opening = models.CharField(max_length=10,
+                                      choices=StatusOpeningChoices.choices,
+                                      default=StatusOpeningChoices.OPEN)
 
     datetime = models.DateTimeField()
 

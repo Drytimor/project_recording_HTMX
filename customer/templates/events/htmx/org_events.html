@@ -1,5 +1,9 @@
 <div id="event-profile">
+
     {% for event in events %}
         {% include 'events/pattern/org_events.html' %}
     {% endfor %}
+
+    {% include 'events/pattern/paginator_organization_events.html' %}
+
 </div>
