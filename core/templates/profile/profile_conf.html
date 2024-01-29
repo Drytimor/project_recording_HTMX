@@ -1,13 +1,47 @@
 {% if user.is_authenticated %}
     <div>
         <button class="btn"
-                hx-get="{% url 'events_user' %}"
-                hx-select="#user-events-list"
-                hx-target="#central-col"
-                hx-push-url="{% url 'events_user' %}">
+                hx-get="{% url 'events_user' page=1 %}"
+                hx-target="#row-right"
+                hx-swap="innerHTML"
+                hx-push-url="true">
                 записи
         </button>
     </div>
+
+{% if user.is_organization %}
+
+    <div>
+        <button class="btn"
+                hx-get="{% url 'organization_profile' %}"
+                hx-target="#row-right"
+                hx-swap="innerHTML"
+                hx-push-url="true">
+                организация
+        </button>
+    </div>
+
+    <div>
+        <button hx-get="{% url 'org_employees_list' page=1 %}"
+                hx-target="#row-right"
+                hx-swap="innerHTML"
+                hx-push-url="true"
+                class="btn">
+                сотрудники
+        </button>
+    </div>
+
+    <div>
+        <button hx-get="{% url 'org_events_list' page=1 %}"
+                hx-target="#row-right"
+                hx-swap="innerHTML"
+                hx-push-url="true"
+                class="btn">
+                мероприятия
+        </button>
+    </div>
+
+{% endif %}
 
     <div>
         <button class="btn"
@@ -27,16 +61,6 @@
 
     <div>
         <button class="btn"
-                hx-post="{% url 'account_logout' %}"
-                hx-target="#row-main"
-                hx-select="#row-main"
-                hx-push-url="{% url 'home' %}">
-                выход
-        </button>
-    </div>
-
-    <div>
-        <button class="btn"
                 hx-post="{% url 'profile_delete' %}"
                 hx-target="#row-main"
                 hx-select="#row-main"
@@ -44,18 +68,14 @@
                 удалить профиль
         </button>
     </div>
-{% endif %}
-
-{% if user.is_organization %}
 
     <div>
         <button class="btn"
-                hx-get="{% url 'organization_profile' %}"
-                hx-target="#central-col"
-                hx-select="#central-col"
-                hx-swap="outerHTMl"
-                hx-push-url="{% url 'organization_profile' %}">
-                организация
+                hx-post="{% url 'account_logout' %}"
+                hx-target="#row-main"
+                hx-select="#row-main"
+                hx-push-url="{% url 'home' %}">
+                выход
         </button>
     </div>
 

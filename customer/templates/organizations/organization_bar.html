@@ -1,26 +1,26 @@
 <div id="org-bar">
     <p>
         <button hx-get="{% url 'organization_info' pk=organization_id %}"
-                hx-target="next div"
-                hx-select="#org-profile"
+                hx-target="#row-right"
+                hx-select="#row-right"
                 hx-swap="outerHTML"
-                hx-push-url="{% url 'organization_info' pk=organization_id %}"
+                hx-push-url="true"
                 class="btn">
                 организация
         </button>
 
-        <button hx-get="{% url 'organization_employees' pk=organization_id %}"
-                hx-target="next div"
-                hx-swap="outerHTML"
-                hx-push-url="{% url 'organization_employees' pk=organization_id %}"
+        <button hx-get="{% url 'organization_employees' org_pk=organization_id page=1 %}"
+                hx-target="#row-right"
+                hx-swap="innerHTML"
+                hx-push-url="true"
                 class="btn">
                 сотрудники
         </button>
 
-        <button hx-get="{% url 'organization_events' pk=organization_id %}"
-                hx-target="next div"
-                hx-swap="outerHTML"
-                hx-push-url="{% url 'organization_events' pk=organization_id %}"
+        <button hx-get="{% url 'organization_events' org_pk=organization_id page=1 %}"
+                hx-target="#row-right"
+                hx-swap="innerHTML"
+                hx-push-url="true"
                 class="btn">
                 мероприятия
         </button>

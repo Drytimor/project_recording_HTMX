@@ -5,14 +5,14 @@
         <p>
             <label>Дата</label>: {{ record.datetime }}
 
-            <button hx-get="{% url 'record_form_update' pk=record.id %}"
+            <button hx-get="{% url 'record_form_update' record_pk=record.id %}?event={{ event_id }}"
                     hx-target="closest div"
                     hx-swap="outerHTML"
                     class="btn">
                     редактировать
             </button>
 
-            <button hx-post="{% url 'record_delete' pk=record.id %}"
+            <button hx-post="{% url 'record_delete' record_pk=record.id %}?event={{ event_id }}"
                     hx-target="closest div"
                     hx-swap="outerHTML"
                     class="btn">

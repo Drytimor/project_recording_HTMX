@@ -4,6 +4,8 @@ from django.views.generic import TemplateView, View, UpdateView, DeleteView, Lis
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import TemplateResponseMixin, ContextMixin
 from django.views.generic.edit import FormMixin
+
+from organization.services import _get_or_set_user_object_from_cache
 from .forms import UserUpdateForm
 from django.template import loader
 from django.template.context_processors import csrf
@@ -72,9 +74,15 @@ signup = CustomSignupView.as_view()
 class Profile(TemplateResponseMixin, ContextMixin, View):
 
     template_name = 'profile/profile.html'
+    user = None
 
     def get(self, *args, **kwargs):
-        context = self.get_context_data()
+
+        self.user = _get_or_set_user_object_from_cache(
+            session_key_for_cache=self.request.session.session_key,
+           user=self.request.user).get('user')
+
+        context = self.get_context_data(user=self.user)
         return self.render_to_response(context=context)
 
 

@@ -1,16 +1,17 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import View, ContextMixin, TemplateResponseMixin
 
-from customer.filters import RecordsListUserFilter
-from customer.services import (get_organization_info_from_db,
-                               get_event_card_from_db, sign_up_for_event, cancel_recording, get_user_records_from_db,
-                               delete_recording_user_form_profile, get_user_events_from_db,
-                               get_user_event_records_from_db, assigned_event_to_user, delete_assigned_event_from_db,
-                               delete_event_and_all_records_user_from_db, get_all_events_using_filter,
-                               get_all_organization_using_filter)
+from customer.filters import RecordsListUserFilter, EventRecordsListFilter
+from customer.services import (
+    get_organization_info_from_db,
+    get_event_card_from_db, sign_up_for_event, cancel_recording, get_user_records_from_db,
+    delete_recording_user_form_profile, get_user_events_from_db, get_event_and_all_records_from_db_for_customer,
+    get_user_event_records_from_db, assigned_event_to_user, delete_assigned_event_from_db,
+    delete_event_and_all_records_user_from_db, get_all_events_using_filter,
+    get_all_organization_using_filter, get_events_organizations_from_db)
 
 from organization.mixins import CustomTemplateResponseMixin, CustomMixin
-from organization.services import (get_employees_from_db, get_events_from_db, get_event_and_all_records_from_db_for_customer)
+from organization.services import (get_employees_object, get_user_id_from_cache_or_db, get_filtered_event_records)
 from django.views.generic import ListView
 
 
@@ -30,18 +31,14 @@ class OrganizationsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, V
         return self.render_to_response(context=context)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.organizations:
-            context.update({
-                'organizations': self.page_obj.object_list,
-                'filter_form': self.filter_form,
-                'params': self.params,
-                'page_obj': self.page_obj,
-                'elided_page_range': self.elided_page_range,
-            })
-
-        return context
+        kwargs.update({
+            'organizations': self.page_obj.object_list,
+            'params': self.params,
+            'page_obj': self.page_obj,
+            'elided_page_range': self.elided_page_range,
+            'filter_form': self.filter_form
+        })
+        return super().get_context_data(**kwargs)
 
 
 organizations_all = OrganizationsAll.as_view()
@@ -59,19 +56,17 @@ class OrganizationInfo(CustomMixin, CustomTemplateResponseMixin, ContextMixin, V
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'organization_id': 'pk'
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.organization:
-            context['organization'] = self.organization
-        if self.organization_id:
-            context['organization_id'] = self.organization_id
-        return context
+        kwargs.update({
+            'organization': self.organization,
+            'organization_id': self.organization_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 organization_info = OrganizationInfo.as_view()
@@ -82,26 +77,35 @@ class OrganizationEvents(CustomMixin, CustomTemplateResponseMixin, ContextMixin,
     template_name = 'events/org_events.html'
     response_htmx = True
     events = None
+    filter_form = None
+    params = None
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        self.events = get_events_from_db(organization_id=self.organization_id)
+        self.events, self.filter_form, self.params = get_events_organizations_from_db(
+                                                            organization_id=self.organization_id,
+                                                            data=self.request.GET)
+
+        self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.events)
+
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
-            'organization_id': 'pk'
+    def set_class_attributes_from_kwargs_request(self):
+        return {
+            'organization_id': 'org_pk'
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.events:
-            context['events'] = self.events
-        if self.organization_id:
-            context['organization_id'] = self.organization_id
-        return context
+        kwargs.update({
+            'events': self.page_obj.object_list,
+            'params': self.params,
+            'page_obj': self.page_obj,
+            'elided_page_range': self.elided_page_range,
+            'organization_id': self.organization_id,
+            'filter_form': self.filter_form,
+        })
+        return super().get_context_data(**kwargs)
 
 
 organization_events = OrganizationEvents.as_view()
@@ -115,23 +119,24 @@ class OrganizationEmployees(CustomMixin, CustomTemplateResponseMixin, ContextMix
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        self.employees = get_employees_from_db(organization_id=self.organization_id)
+        self.employees = get_employees_object(organization_id=self.organization_id)
+        self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.employees)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
-            'organization_id': 'pk'
+    def set_class_attributes_from_kwargs_request(self):
+        return {
+            'organization_id': 'org_pk'
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.employees:
-            context['employees'] = self.employees
-        if self.organization_id:
-            context['organization_id'] = self.organization_id
-        return context
+        kwargs.update({
+            'employees': self.page_obj.object_list,
+            'page_obj': self.page_obj,
+            'elided_page_range': self.elided_page_range,
+            'organization_id': self.organization_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 organization_employees = OrganizationEmployees.as_view()
@@ -146,24 +151,22 @@ class EmployeeInfo(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        self.employee = get_employees_from_db(employee_id=self.employee_id)
+        self.employee = get_employees_object(employee_id=self.employee_id)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'employee_id': 'pk',
             'organization_id': 'org_pk'
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.employee:
-            context['employee'] = self.employee
-        if self.organization_id:
-            context['organization_id'] = self.organization_id
-        return context
+        kwargs.update({
+            'employee': self.employee,
+            'organization_id': self.organization_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 employee_info = EmployeeInfo.as_view()
@@ -179,29 +182,29 @@ class EventsAll(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
     params = None
 
     def get(self, *args, **kwargs):
-        self.user_id = self.get_or_set_user_id_from_cache()
 
-        self.events, self.filter_form, self.params = get_all_events_using_filter(user_id=self.user_id,
-                                                                                 data=self.request.GET)
+        self.user_id = get_user_id_from_cache_or_db(
+                            session_key_for_cache=self.request.session.session_key,
+                            user=self.request.user)
+
+        self.events, self.filter_form, self.params = get_all_events_using_filter(
+                                                        user_id=self.user_id,
+                                                        data=self.request.GET)
 
         self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.events)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.events:
-            context.update({
-                'events': self.page_obj.object_list,
-                'user_pk': self.user_id,
-                'filter_form': self.filter_form,
-                'params': self.params,
-                'page_obj': self.page_obj,
-                'elided_page_range': self.elided_page_range,
-            })
-
-        return context
+        kwargs.update({
+            'events': self.page_obj.object_list,
+            'user_pk': self.user_id,
+            'params': self.params,
+            'page_obj': self.page_obj,
+            'elided_page_range': self.elided_page_range,
+            'filter_form': self.filter_form
+        })
+        return super().get_context_data(**kwargs)
 
 
 events_all = EventsAll.as_view()
@@ -214,38 +217,45 @@ class AssignedEvents(CustomMixin, TemplateResponseMixin, ContextMixin, View):
     deleted_event = None
 
     def put(self, *args, **kwargs):
-        self.user_id = self.get_or_set_user_id_from_cache()
+
+        self.user_id = get_user_id_from_cache_or_db(
+                            session_key_for_cache=self.request.session.session_key,
+                            user=self.request.user)
+
         self.set_class_attributes_from_request()
+
         self.assigned_event = assigned_event_to_user(user_id=self.user_id,
                                                      event_id=self.event_id)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
     def delete(self, *args, **kwargs):
-        self.user_id = self.get_or_set_user_id_from_cache()
+
+        self.user_id = get_user_id_from_cache_or_db(
+                            session_key_for_cache=self.request.session.session_key,
+                            user=self.request.user)
+
         self.set_class_attributes_from_request()
+
         self.deleted_event = delete_assigned_event_from_db(user_id=self.user_id,
                                                            event_id=self.event_id)
         context = self.get_context_data()
+
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'event_id': 'event_pk'
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.assigned_event:
-            context['assigned_event'] = self.assigned_event
-        if self.deleted_event:
-            context['deleted_event'] = self.deleted_event
-        if self.user_id:
-            context['user_pk'] = self.user_id
-        if self.event_id:
-            context['event_pk'] = self.event_id
-        return context
+        kwargs.update({
+            'assigned_event': self.assigned_event,
+            'deleted_event': self.deleted_event,
+            'user_pk': self.user_id,
+            'event_pk': self.event_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 assigned_events = AssignedEvents.as_view()
@@ -256,20 +266,33 @@ class EventsListUser(CustomMixin, CustomTemplateResponseMixin, ContextMixin, Vie
     template_name = 'events/user_events.html'
     response_htmx = True
     user_events = None
+    params = None
+    filter_form = None
 
     def get(self, *args, **kwargs):
-        self.user_id = self.get_or_set_user_id_from_cache()
-        self.user_events = get_user_events_from_db(user_id=self.user_id)
+
+        self.user_id = get_user_id_from_cache_or_db(
+                            session_key_for_cache=self.request.session.session_key,
+                            user=self.request.user)
+
+        self.user_events, self.filter_form, self.params = get_user_events_from_db(
+                                                                user_id=self.user_id,
+                                                                data=self.request.GET)
+
+        self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.user_events)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.user_events:
-            context['user_events'] = self.user_events
-        if self.user_id:
-            context['user_pk'] = self.user_id
-        return context
+        kwargs.update({
+            'user_events': self.page_obj.object_list,
+            'params': self.params,
+            'page_obj': self.page_obj,
+            'elided_page_range': self.elided_page_range,
+            'filter_form': self.filter_form,
+            'user_pk': self.user_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 events_user = EventsListUser.as_view()
@@ -287,20 +310,18 @@ class EventInfo(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View):
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'event_id': 'pk',
             'organization_id': 'org_pk'
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.event:
-            context['event'] = self.event
-        if self.organization_id:
-            context['organization_id'] = self.organization_id
-        return context
+        kwargs.update({
+            'event': self.event,
+            'organization_id': self.organization_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 event_info = EventInfo.as_view()
@@ -311,33 +332,48 @@ class EventRecords(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
     template_name = 'records/event_records.html'
     response_htmx = True
     event = None
-    records = None
+    params = None
+    filter_form = None
+    filter_class = EventRecordsListFilter
 
     def get(self, *args, **kwargs):
-        self.user_id = self.get_or_set_user_id_from_cache()
+
+        self.user_id = get_user_id_from_cache_or_db(
+                            session_key_for_cache=self.request.session.session_key,
+                            user=self.request.user)
+
         self.set_class_attributes_from_request()
-        self.event, self.records = get_event_and_all_records_from_db_for_customer(user_id=self.user_id,
-                                                                                  event_id=self.event_id)
+
+        self.event, event_records = get_event_and_all_records_from_db_for_customer(
+            user_id=self.user_id, event_id=self.event_id)
+
+        filtered_records, filter_form, params = get_filtered_event_records(
+            event_records=event_records, filter_class=self.filter_class,
+            data=self.request.GET)
+
+        self.page_obj, self.elided_page_range = self.create_pagination(object_list=filtered_records)
+
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'event_id': 'event_pk',
             'organization_id': 'org_pk',
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.event:
-            context['event'] = self.event
-        if self.records:
-            context['records'] = self.records
-        if self.organization_id:
-            context['organization_id'] = self.organization_id
-            context['user_pk'] = self.user_id
-        return context
+        kwargs.update({
+            'event': self.event,
+            'records': self.page_obj.object_list,
+            'page_obj': self.page_obj,
+            'elided_page_range': self.elided_page_range,
+            'params': self.params,
+            'filter_form': self.filter_form,
+            'organization_id': self.organization_id,
+            'user_pk': self.user_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 event_records = EventRecords.as_view()
@@ -351,33 +387,37 @@ class RecordSignUp(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
     record = None
 
     def put(self, *args, **kwargs):
-        self.user_id = self.get_or_set_user_id_from_cache()
+
+        self.user_id = get_user_id_from_cache_or_db(
+                            session_key_for_cache=self.request.session.session_key,
+                            user=self.request.user)
+
         self.set_class_attributes_from_request()
-        self.record = sign_up_for_event(user_id=self.user_id, record_id=self.record_id)
+
+        self.record = sign_up_for_event(user_id=self.user_id,
+                                        record_id=self.record_id)
+
         context = self.get_context_data()
         headers = self.set_headers_to_response()
+
         return self.render_to_response(context=context,
                                        headers=headers)
 
     def set_headers_to_response(self):
-        headers = super().set_headers_to_response()
         if not self.user_id:
-            headers.update({
+            return {
                 'HX-Reswap': 'innerHTML',
-                'HX-Retarget': f'#record-error{self.record_id}'})
-        return headers
+                'HX-Retarget': f'#record-error{self.record_id}'
+            }
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'record_id': 'pk',
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.record:
-            context['record'] = self.record
-        return context
+        kwargs['record'] = self.record
+        return super().get_context_data(**kwargs)
 
 
 record_sign_up = RecordSignUp.as_view()
@@ -390,26 +430,31 @@ class RecordCancel(CustomMixin, CustomTemplateResponseMixin, ContextMixin, View)
     record = None
 
     def put(self, *args, **kwargs):
-        self.user_id = self.get_or_set_user_id_from_cache()
+
+        self.user_id = get_user_id_from_cache_or_db(
+                            session_key_for_cache=self.request.session.session_key,
+                            user=self.request.user)
+
         self.set_class_attributes_from_request()
+
         self.record = cancel_recording(user_id=self.user_id,
                                        record_id=self.record_id)
+
         context = self.get_context_data()
+
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'record_id': 'pk',
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.record:
-            context['record'] = self.record
-        if self.user_id:
-            context['user_pk'] = self.user_id
-        return context
+        kwargs.update({
+            'record': self.record,
+            'user_pk': self.user_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 record_cancel = RecordCancel.as_view()
@@ -435,30 +480,23 @@ class RecordsListUser(CustomMixin, TemplateResponseMixin, ContextMixin, View):
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'user_id': 'user_pk',
             'event_id': 'event_pk'
         }
-        return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.user_records:
-            context.update({
-                'user_records': self.page_obj.object_list,
-                'filter_form': self.filter_form,
-                'params': self.params,
-                'page_obj': self.page_obj,
-                'elided_page_range': self.elided_page_range,
-            })
-
-        if self.user_id:
-            context['user_pk'] = self.user_id
-        if self.event_id:
-            context['event_pk'] = self.event_id
-        return context
+        kwargs.update({
+            'user_records': self.page_obj.object_list,
+            'filter_form': self.filter_form,
+            'params': self.params,
+            'page_obj': self.page_obj,
+            'elided_page_range': self.elided_page_range,
+            'user_pk': self.user_id,
+            'event_pk': self.event_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 records_user = RecordsListUser.as_view()
@@ -472,12 +510,11 @@ class RecordsDeleteAllUser(CustomMixin, TemplateResponseMixin, View):
                                                   event_id=self.event_id)
         return HttpResponse(status=200)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'event_id': 'event_pk',
             'user_id': 'user_pk',
         }
-        return attr
 
 
 delete_all_records_user = RecordsDeleteAllUser.as_view()
@@ -487,15 +524,21 @@ class EventRecordsUser(CustomMixin, TemplateResponseMixin, ContextMixin, View):
 
     template_name = 'records/htmx/user_event_records.html'
     user_event_records = None
+    params = None
+    filter_form = None
 
     def get(self, *args, **kwargs):
         self.set_class_attributes_from_request()
-        self.user_event_records = get_user_event_records_from_db(user_id=self.user_id,
-                                                                 event_id=self.event_id)
+        self.user_event_records, self.filter_form, self.params = get_user_event_records_from_db(
+                                                                        user_id=self.user_id,
+                                                                        event_id=self.event_id,
+                                                                        data=self.request.GET)
+
+        self.page_obj, self.elided_page_range = self.create_pagination(object_list=self.user_event_records)
         context = self.get_context_data()
         return self.render_to_response(context=context)
 
-    def get_attr_from_request(self):
+    def set_class_attributes_from_kwargs_request(self):
         attr = {
             'user_id': 'user_pk',
             'event_id': 'event_pk'
@@ -503,12 +546,16 @@ class EventRecordsUser(CustomMixin, TemplateResponseMixin, ContextMixin, View):
         return attr
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.user_event_records:
-            context['user_event_records'] = self.user_event_records
-        if self.user_id:
-            context['user_pk'] = self.user_id
-        return context
+        kwargs.update({
+            'user_event_records': self.page_obj.object_list,
+            'filter_form': self.filter_form,
+            'params': self.params,
+            'page_obj': self.page_obj,
+            'elided_page_range': self.elided_page_range,
+            'user_pk': self.user_id,
+            'event_pk': self.event_id
+        })
+        return super().get_context_data(**kwargs)
 
 
 event_records_user = EventRecordsUser.as_view()
@@ -523,13 +570,12 @@ class RecordDeleteUser(CustomMixin, TemplateResponseMixin, ContextMixin, View):
 
         return HttpResponse(status=200)
 
-    def get_attr_from_request(self):
-        attr = {
+    def set_class_attributes_from_kwargs_request(self):
+        return {
             'record_id': 'pk',
             'user_id': 'user_pk',
             'event_id': 'event_pk'
         }
-        return attr
 
 
 record_user_delete = RecordDeleteUser.as_view()

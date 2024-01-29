@@ -9,6 +9,7 @@
 <div><label>Название</label>: {{ event.name }}</div>
 <div><label>Вход</label>: {{ event.status_tariff }}</div>
 <div><label>Сотрудники</label>:
+
     {% for employee in event.employees_event %}
         {{ employee.name }}
     {% endfor %}
@@ -18,15 +19,15 @@
 <div>
     <button class="btn"
             hx-get="{% url 'records_user' page=1 user_pk=user_pk event_pk=event.id %}"
-            hx-target="#user-records-list-with-filters"
+            hx-target="next #user-records-list-with-filters"
             hx-swap="outerHTML">
             мои записи
     </button>
 
     <button class="btn"
-            hx-get="{% url 'event_records_user' user_pk=user_pk event_pk=event.id %}"
-            hx-target="next div"
-            hx-swap="innerHTML">
+            hx-get="{% url 'event_records_user' page=1 user_pk=user_pk event_pk=event.id %}"
+            hx-target="next #user-records-list-with-filters"
+            hx-swap="outerHTML">
             все записи
     </button>
 

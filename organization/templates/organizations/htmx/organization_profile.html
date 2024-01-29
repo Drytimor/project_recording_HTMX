@@ -1,24 +1,33 @@
-<div id="central-col"
- hx-target="this"
- hx-swap="innerHTML">
+<!--Центральная колонка-->
+<div class="col-10 px-5">
+    <div class="p-3"
+         id="central-col">
 
     {% block org_profile %}
 
         {% if organization %}
 
-            {% block org_config %}
-                {% include 'organizations/organization_config.html' %}
-            {% endblock org_config %}
-
             {% include 'organizations/pattern/profile.html' %}
 
         {% else %}
 
-            {% include 'organizations/pattern/organization_none.html' %}
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                        {% include 'organizations/pattern/organization_none.html' %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
 
         {% endif %}
 
     {% endblock org_profile %}
 
 </div>
+</div>
 
+<!--Правая колонка-->
+<div class="col-2">
+    <div class="p-3">
+    </div>
+</div>

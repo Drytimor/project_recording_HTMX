@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
 {% block title %} организации {% endblock title %}
 
@@ -12,19 +13,21 @@
 
 {% block central_col %}
 <!--Центральная колонка-->
-    <div class="col-8 px-5 pt-5">
-        <div id="central-col">
+    <div class="col-10 px-5">
+        <div class="p-3" id="central-col">
 
             {% block org_info %}
                 <div id="org-list">
-                    {% if organizations_all %}
+                    {% if organizations %}
 
                         {% block org_bar %}
                         {% endblock org_bar %}
 
-                        {% for organization in organizations_all %}
+                        {% for organization in organizations %}
                             {% include 'organizations/pattern/organizations_all.html' %}
                         {% endfor %}
+
+                        {% include 'organizations/pattern/paginator_organizations_all.html' %}
 
                     {% else %}
 
@@ -40,8 +43,20 @@
 
 {% block right_col %}
 <!--Правая колонка-->
-    <div class="col-2 pt-5">
-        <div class="p-3"></div>
+    <div class="col-2">
+        <div class="p-3">
+            <form hx-get="{% url 'organizations_all' page=1 %}"
+                  hx-target="#org-list"
+                  hx-select="#org-list"
+                  hx-params="*"
+                  hx-swap="outerHTML"
+                  hx-push-url="true">
+
+                  {{ filter_form | crispy }}
+
+                <input class="btn" type="submit" value="Найти">
+            </form>
+        </div>
     </div>
 {% endblock right_col %}
 

@@ -3,8 +3,7 @@
     <div>
         <label>Категория</label>: {{ organization.category }}
         <button hx-get="{% url 'organization_info' pk=organization.id %}"
-                hx-target="#org-list"
-                hx-select="#central-col"
+                hx-target="#row-main"
                 hx-swap="outerHTML"
                 hx-push-url="true"
                 class="btn">

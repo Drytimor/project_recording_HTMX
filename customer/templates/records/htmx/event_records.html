@@ -1,5 +1,43 @@
-{% if records %}
-    {% for record in records %}
-        {% include 'records/pattern/event_records.html' %}
-    {% endfor %}
-{% endif %}
+<div id="event-records-all-with-filters">
+    {% if records %}
+        <form class="row g-3"
+              hx-get="{% url 'event_records' event_pk=event.id org_pk=organization_id page=1 %}"
+              hx-target="#event-records-all"
+              hx-select="#event-records-all"
+              hx-params="*"
+              hx-swap="outerHTML">
+
+            <div class="col-md-10">
+
+                {{ filter_form.datetime.label_tag }}
+                {{ filter_form.datetime }}
+                {{ filter_form.status_opening.label_tag }}
+                {{ filter_form.status_opening }}
+                <input class="btn col-md-2" type="submit" value="Применить">
+
+            </div>
+
+        </form>
+
+    {% endif %}
+
+    <div id="event-records-all">
+
+        {% if records %}
+
+            {% for record in records %}
+                {% include 'records/pattern/event_records.html' %}
+            {% endfor %}
+
+            {% include 'records/pattern/paginator_events_record.html' %}
+
+        {% else %}
+
+             <div>Пусто</div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+

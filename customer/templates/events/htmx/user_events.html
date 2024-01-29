@@ -1,17 +1,48 @@
-{% if user_events %}
+{% load crispy_forms_tags %}
 
-    <div id="user-events-list">
-        {% for event in user_events %}
 
-            <div id="user-event-card">
+<!--Центральная колонка-->
+<div class="col-10 px-5">
+    <div class="p-3" id="central-col">
+        <div id="user-events-list">
 
-                {% include 'events/pattern/user_events.html' %}
+            {% if user_events %}
 
-                <div id="user-records-list-with-filters"></div>
+                {% for event in user_events %}
+                    <div id="user-event-card">
 
-            </div><br>
+                        {% include 'events/pattern/user_events.html' %}
 
-        {% endfor %}
+                        <div id="user-records-list-with-filters"></div>
+
+                    </div><br>
+                {% endfor %}
+
+                {% include 'events/pattern/paginator_user_events.html' %}
+
+            {% else %}
+
+                <div> Пусто </div>
+
+            {% endif %}
+
+        </div>
     </div>
+</div>
 
-{% endif %}
+<!--Правая колонка-->
+<div class="col-2">
+    <div class="p-3">
+        <form hx-get="{% url 'events_user' page=1 %}"
+              hx-target="#user-events-list"
+              hx-select="#user-events-list"
+              hx-params="*"
+              hx-swap="outerHTML"
+              hx-push-url="true">
+
+              {{ filter_form | crispy }}
+
+            <input class="btn" type="submit" value="Найти">
+        </form>
+    </div>
+</div>

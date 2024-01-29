@@ -1,9 +1,11 @@
-from django.db.models import F, Prefetch, Count, Q
+from django.db.models import F, Prefetch, Q
 from django.db import transaction
 from allauth_app.settings import CACHE_KEY_USER_ASSIGNED_EVENTS, CACHE_KEY_MODEL_OBJECT_ID, \
     CACHE_KEY_ALL_OBJECT_FROM_DB, CACHE_KEY_FILTER_NAME
-from customer.filters import EventsFilter, OrganizationFilter, RecordsListUserFilter
+from customer.filters import EventsFilter, OrganizationFilter, RecordsListUserFilter, EventsListUserFilter, \
+    OrganizationEventsFilter
 from customer.models import StatusRecordingChoices, Recordings, AssignedEvents
+from customer.tasks import set_cache_assigned_user_events
 from organization.models import Organizations, Events, Records
 from organization.todo import create_card_record_user
 from django.core.cache import cache
@@ -44,7 +46,7 @@ def get_filters_model_objects_from_cache(
         filter_class,
         cache_key_all_objects: str,
         queryset_from_db: QuerySet,
-        timeout_from_cache: int = 60*5) -> tuple[list, Form]:
+        timeout_from_cache: int = 60*2) -> tuple[list, Form]:
 
     queryset = cache.get_or_set(key=cache_key_all_objects,
                                 default=queryset_from_db,
@@ -119,7 +121,24 @@ def get_event_card_from_db(event_id: int):
     return event.get()
 
 
-def get_user_events_from_db(user_id: int):
+def get_events_organizations_from_db(organization_id: int, data: QueryDict):
+
+    events_organization = Events.objects.filter(organization_id=organization_id)
+    params = data.urlencode()
+
+    filter_object_events_organizations = OrganizationEventsFilter(data=data,
+                                                                  queryset=events_organization)
+
+    filtered_events_organizations = filter_object_events_organizations.qs
+    filter_form = filter_object_events_organizations.form
+
+    return filtered_events_organizations, filter_form, params
+
+
+def get_user_events_from_db(user_id: int, data: QueryDict):
+
+    params = data.urlencode()
+
     user_events_id = (Recordings.objects
                       .values_list('record__events__id')
                       .filter(user_id=user_id))
@@ -131,11 +150,39 @@ def get_user_events_from_db(user_id: int):
                    .prefetch_related(Prefetch('employees', to_attr='employees_event'))
                    .filter(Q(id__in=user_events_id) | Q(id__in=assigned_events_user)))
 
-    events = set_field_assigned(events=user_events,
-                                assigned_events_user=assigned_events_user)
+    filter_objects_user_events = EventsListUserFilter(data=data,
+                                                      queryset=user_events)
 
-    return events
+    filtered_events_user = filter_objects_user_events.qs
+    filter_form = filter_objects_user_events.form
 
+    user_events = set_field_assigned(events=filtered_events_user,
+                                     assigned_events_user=assigned_events_user)
+
+    return user_events, filter_form, params
+
+
+def get_event_and_all_records_from_db_for_customer(user_id: int, event_id: int):
+
+    event = (Events.objects.filter(id=event_id)
+                           .prefetch_related(
+                            Prefetch(lookup='employees',
+                                     to_attr='employees_event'))
+                           .get())
+    if user_id:
+        records = event.records.prefetch_related(
+                                   Prefetch(lookup='recordings',
+                                            queryset=Recordings.objects.select_related('user')
+                                                                       .only('user_id'),
+                                            to_attr='user_recordings'))
+
+        for recordings in records:
+            registered_user_flag = any(user_id == _recordings.user.id for _recordings in recordings.user_recordings)
+            recordings.registered_user = registered_user_flag
+    else:
+        records = event.records.all()
+
+    return event, records
 
 @transaction.atomic
 def assigned_event_to_user(user_id: int, event_id: int):
@@ -191,9 +238,10 @@ def get_or_set_assigned_user_events_from_cache(user_id: int) -> dict:
                                   .values_list('event', 'user')
         )
 
-        cache.set(key=cache_key_user_assigned_events,
-                  value=assigned_events_user_from_db,
-                  timeout=60**2 * 6)
+        set_cache_assigned_user_events(
+            cache_key_user_assigned_events=cache_key_user_assigned_events,
+            assigned_events_user_from_db=assigned_events_user_from_db,
+            timeout_from_cache=60**2 * 5)
 
         return assigned_events_user_from_db
 
@@ -253,7 +301,7 @@ def get_user_records_from_db(
     return user_records, filter_form, params
 
 
-def get_user_event_records_from_db(user_id: int, event_id: int):
+def get_user_event_records_from_db(user_id: int, event_id: int, data: QueryDict):
 
     event_recordings = (Recordings.objects.filter(record__events__id=event_id)
                                   .select_related('user', 'record'))
@@ -263,7 +311,15 @@ def get_user_event_records_from_db(user_id: int, event_id: int):
     records = create_card_record_user(user_id=user_id,
                                       event_recordings=event_recordings,
                                       event_records=event_records)
-    return records
+
+    filter_object_user_event_records = RecordsListUserFilter(data=data,
+                                                             queryset=records)
+
+    filtered_user_event_records = filter_object_user_event_records.qs
+    filter_form = filter_object_user_event_records.form
+    params = data.urlencode()
+
+    return filtered_user_event_records, filter_form, params
 
 
 @transaction.atomic

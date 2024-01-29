@@ -11,14 +11,14 @@
                         {% endfor %}
                     </div>
 
-                    <button hx-get="{% url 'event_form_update' org_pk=organization_id pk=event.id %}"
+                    <button hx-get="{% url 'event_form_update' org_pk=organization_id event_pk=event.id %}"
                             hx-target="#event-profile"
                             hx-swap="outerHTML"
                             class="btn">
                             редактировать
                     </button>
 
-                    <button hx-post="{% url 'event_delete' pk=event.id %}"
+                    <button hx-post="{% url 'event_delete' org_pk=organization_id event_pk=event.id %}"
                             hx-target="#org-profile"
                             class="btn">
                             удалить
@@ -27,11 +27,11 @@
 
             {% endif %}
 
-            <button hx-get="{% url 'records_list' org_pk=organization_id pk=event_id %}"
+            <button hx-get="{% url 'org_records_list' org_pk=organization_id event_pk=event_id page=1 %}"
                     hx-target="#record-profile"
                     hx-select="#record-profile"
                     hx-swap="outerHTML"
-                    hx-push-url="{% url 'records_list' org_pk=organization_id pk=event_id %}"
+                    hx-push-url="true"
                     class="btn">
                     записи
             </button>
@@ -40,18 +40,49 @@
         {% block record_profile %}
             <div id="record-profile">
                 <button id="btn_show_form_record"
-                        hx-get="{% url 'record_form_create' pk=event_id %}"
-                        hx-target="#records_list"
+                        hx-get="{% url 'record_form_create' event_pk=event_id %}"
+                        hx-target="#org-records_list"
                         hx-swap="afterbegin"
                         class="btn">
                         создать запись
                 </button><br>
 
-                <div id="records_list">
-                    {% if event.records_event %}
-                        {% for record in event.records_event %}
+                {% if event_records %}
+
+                    <form class="row g-3"
+                          hx-get="{% url 'org_records_list' org_pk=organization_id event_pk=event_id page=1 %}"
+                          hx-target="#org-records_list"
+                          hx-select="#org-records_list"
+                          hx-params="*"
+                          hx-swap="outerHTML">
+
+                        <div class="col-md-10">
+
+                            {{ filter_form.datetime.label_tag }}
+                            {{ filter_form.datetime }}
+                            {{ filter_form.status_opening.label_tag }}
+                            {{ filter_form.status_opening }}
+                            <input class="btn col-md-2" type="submit" value="Применить">
+
+                        </div>
+
+                    </form>
+
+                {% endif %}
+
+                <div id="org-records_list">
+                    {% if event_records %}
+
+                        {% for record in event_records %}
                             {% include 'records/record_create.html' %}
                         {% endfor %}
+
+                        {% include 'records/pattern/paginator_event_records.html' %}
+
+                    {% else %}
+
+                        <div>Пусто</div>
+
                     {% endif %}
                 </div>
             </div>

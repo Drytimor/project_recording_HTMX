@@ -1,9 +1,38 @@
-{% include 'organizations/organization_bar.html' %}
+<div class="row"
+     id="row-main">
 
-<div id="event-profile">
+    <!--Левая колонка-->
+        <div class="col-2 pt-5">
+            <div class="p-3">
+                {% include 'organizations/organization_bar.html' %}
+            </div>
+        </div>
 
-    {% include 'events/pattern/event_info.html' %}
+    <div class="col-10 pt-5">
+        <div class="row"
+             id="row-right">
 
-    <div id="record-all"></div>
+            <!--Центральная колонка-->
+            <div class="col-10 px-5">
+                <div class="p-3" id="central-col">
+                    <div id="event-profile">
 
+                        {% include 'events/pattern/event_info.html' %}
+
+                        <div id="event-records-all-with-filters"></div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!--Правая колонка-->
+            <div class="col-2">
+                <div class="p-3">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+
+

@@ -1,9 +1,34 @@
-<div id="event-profile">
+{% load crispy_forms_tags %}
 
-    {% for event in events %}
-        {% include 'events/pattern/org_events.html' %}
-    {% endfor %}
 
-    {% include 'events/pattern/paginator_organization_events.html' %}
+<!--Центральная колонка-->
+<div class="col-10 px-5">
+    <div class="p-3" id="central-col">
+        <div id="event-profile">
 
+            {% for event in events %}
+                {% include 'events/pattern/org_events.html' %}
+            {% endfor %}
+
+            {% include 'events/pattern/paginator_organization_events.html' %}
+
+        </div>
+    </div>
+</div>
+
+<!--Правая колонка-->
+<div class="col-2">
+    <div class="p-3">
+        <form hx-get="{% url 'organization_events' org_pk=organization_id page=1 %}"
+              hx-target="#event-profile"
+              hx-select="#event-profile"
+              hx-params="*"
+              hx-swap="outerHTML"
+              hx-push-url="true">
+
+              {{ filter_form | crispy }}
+
+            <input class="btn" type="submit" value="Найти">
+        </form>
+    </div>
 </div>

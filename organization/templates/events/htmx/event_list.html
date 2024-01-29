@@ -1,19 +1,72 @@
-<div id="org-profile">
-    <div>
-        <button id="btn_show_form_event"
-                hx-get="{% url 'event_form_create' pk=organization_id %}"
-                hx-target="#events-list"
-                hx-swap="afterbegin"
-                class="btn">
-            добавить мероприятие
-        </button>
-    </div>
+{% load crispy_forms_tags %}
 
-    <div id="events-list">
-        {% if events %}
-            {% for event in events %}
-                {% include 'events/event_create.html' %}
-            {% endfor %}
+
+<!--Центральная колонка-->
+<div class="col-10 px-5">
+    <div class="p-3" id="central-col">
+        <div id="org-profile">
+            {% if messages %}
+
+                {% for message in messages %}
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                        {{ message }}
+                        <a role="button"
+                           hx-get="{{message.extra_tags.url}}"
+                           hx-target="#row-right"
+                           hx-swap="innerHTML"
+                           hx-push-url="true">
+                           Перейти
+                        </a>
+                    {% endif %}
+                {% endfor %}
+
+            {% else %}
+
+                <div>
+                    <button id="btn_show_form_event"
+                            hx-get="{% url 'event_form_create' org_pk=organization_id %}"
+                            hx-target="#org-events-list"
+                            hx-swap="afterbegin"
+                            class="btn">
+                        добавить мероприятие
+                    </button>
+                </div>
+
+                <div id="org-events-list">
+                    {% if events %}
+
+                        {% for event in events %}
+                            {% include 'events/event_create.html' %}
+                        {% endfor %}
+
+                        {% include 'events/pattern/paginator_events_list.html' %}
+
+                    {% endif %}
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!--Правая колонка-->
+<div class="col-2">
+    <div class="p-3">
+        {% if filter_form %}
+
+            <form hx-get="{% url 'org_events_list' page=1 %}?organization={{organization_id}}&{{ params }}"
+                  hx-target="#org-events-list"
+                  hx-select="#org-events-list"
+                  hx-params="*"
+                  hx-swap="outerHTML"
+                  hx-push-url="true">
+
+                  {{ filter_form | crispy }}
+
+                <input class="btn" type="submit" value="Найти">
+
+            </form>
+
         {% endif %}
     </div>
 </div>

@@ -1,9 +1,16 @@
 {% extends 'events/events_all.html' %}
+{% load crispy_forms_tags %}
 
 
-{% block org_bar %}
-    {% include 'organizations/organization_bar.html' %}
-{% endblock org_bar %}
+{% block left_col %}
+<!--Левая колонка-->
+    <div class="col-2 pt-5">
+        <div class="p-3">
+            {% include 'organizations/organization_bar.html' %}
+        </div>
+    </div>
+{% endblock left_col %}
+
 
 {% block event_profile %}
     <div id="event-profile">
@@ -15,3 +22,22 @@
     </div>
 
 {% endblock event_profile %}
+
+{% block right_col %}
+    <!--Правая колонка-->
+    <div class="col-2">
+        <div class="p-3">
+            <form hx-get="{% url 'organization_events' pk=organization_id %}"
+                  hx-target="#event-profile"
+                  hx-select="#event-profile"
+                  hx-params="*"
+                  hx-swap="outerHTML"
+                  hx-push-url="true">
+
+                  {{ filter_form | crispy }}
+
+                <input class="btn" type="submit" value="Найти">
+            </form>
+        </div>
+    </div>
+{% endblock right_col %}

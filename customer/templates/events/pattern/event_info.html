@@ -11,10 +11,10 @@
   {% endfor %}
 </div>
 
-<button hx-get="{% url 'event_records' event_pk=event.id org_pk=organization_id %}"
+<button hx-get="{% url 'event_records' event_pk=event.id org_pk=organization_id page=1 %}?{{params}}"
         class="btn"
-        hx-target="#record-all"
-        hx-push-url="{% url 'event_records' event_pk=event.id org_pk=organization_id %}"
-        hx-swap="innerHTML">
+        hx-target="#event-records-all-with-filters"
+        hx-swap="outerHTML"
+        hx-push-url="true">
         записи
 </button><br>

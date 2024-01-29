@@ -24,9 +24,10 @@ class CreateOrganizationForm(forms.ModelForm):
                                      value='Отмена',
                                      css_class='btn',
                                      css_id='',
-                                     hx_get=reverse_lazy('get_organization'),
+                                     hx_get=reverse_lazy('organization_profile'),
                                      hx_target='#central-col',
-                                     hx_swap="innerHTML"))
+                                     hx_select='#central-col',
+                                     hx_swap="outerHTML"))
 
     category = forms.ModelChoiceField(label='Категория',
                                       queryset=Categories.objects.all(),
@@ -44,7 +45,7 @@ class UpdateOrganizationForm(forms.ModelForm):
         self.helper.form_id = 'org-update-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('organization_update', kwargs={
-                'pk': self.instance.pk
+                'org_pk': self.instance.pk
             }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
@@ -56,10 +57,8 @@ class UpdateOrganizationForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Отмена',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('get_organization',
-                                                         kwargs={
-                                                             'pk': self.instance.pk
-                                                         }),
+                                     hx_get=reverse_lazy('organization_profile'),
+                                     hx_select='#central-col',
                                      hx_target="#org-update-form",
                                      hx_swap="outerHTML"))
 
@@ -82,7 +81,7 @@ class CreateEventForm(forms.ModelForm):
         self.helper.attrs = {
             'hx-post': reverse_lazy('event_create',
                                     kwargs={
-                                        'pk': self.organization
+                                        'org_pk': self.organization
                                     }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
@@ -94,8 +93,9 @@ class CreateEventForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Закрыть',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('get_event'),
+                                     hx_get=reverse_lazy('event_profile'),
                                      hx_target='#event-create-form',
+                                     hx_select='#event-profile',
                                      hx_swap="outerHTML"))
 
     employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
@@ -120,7 +120,7 @@ class UpdateEventForm(forms.ModelForm):
         self.helper.form_id = 'event-update-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('event_update', kwargs={
-                'pk': self.instance.pk,
+                'event_pk': self.instance.pk,
                 'org_pk': self.organization
             }),
             'hx-target': 'this',
@@ -133,12 +133,13 @@ class UpdateEventForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Отмена',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('get_event',
+                                     hx_get=reverse_lazy('event_profile',
                                                          kwargs={
-                                                             'pk': self.instance.pk,
+                                                             'event_pk': self.instance.pk,
                                                              'org_pk': self.organization
                                                          }),
                                      hx_target='#event-update-form',
+                                     hx_select='#event-profile',
                                      hx_swap="outerHTML"))
 
     employees = forms.ModelMultipleChoiceField(queryset=Employees.objects.none(),
@@ -163,7 +164,7 @@ class CreateEmployeeForm(forms.ModelForm):
         self.helper.attrs = {
             'hx-post': reverse_lazy('employee_create',
                                     kwargs={
-                                        'pk': self.organization
+                                        'org_pk': self.organization
                                     }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
@@ -174,7 +175,7 @@ class CreateEmployeeForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Закрыть',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('get_employee'),
+                                     hx_get=reverse_lazy('employee_profile'),
                                      hx_target='#employee-create-form',
                                      hx_swap="outerHTML"))
 
@@ -196,7 +197,7 @@ class UpdateEmployeeForm(forms.ModelForm):
         self.helper.form_id = 'employee-update-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('employee_update', kwargs={
-                'pk': self.instance.pk,
+                'emp_pk': self.instance.pk,
                 'org_pk': self.organization
             }),
             'hx-target': 'this',
@@ -208,9 +209,9 @@ class UpdateEmployeeForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Отмена',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('get_employee',
+                                     hx_get=reverse_lazy('employee_profile',
                                                          kwargs={
-                                                             'pk': self.instance.pk,
+                                                             'emp_pk': self.instance.pk,
                                                              'org_pk': self.organization
                                                          }),
                                      hx_target='#employee-update-form',
@@ -235,7 +236,7 @@ class CreateRecordForm(forms.ModelForm):
         self.helper.attrs = {
             'hx-post': reverse_lazy('record_create',
                                     kwargs={
-                                        'pk': self.event
+                                        'event_pk': self.event
                                     }),
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
@@ -246,7 +247,7 @@ class CreateRecordForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Закрыть',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('get_record'),
+                                     hx_get=reverse_lazy('record_profile'),
                                      hx_target='#record-create-form',
                                      hx_swap="outerHTML"))
 
@@ -273,10 +274,7 @@ class UpdateRecordForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_id = 'record-update-form'
         self.helper.attrs = {
-            'hx-post': reverse_lazy('record_update',
-                                    kwargs={
-                                        'pk': self.instance.pk
-                                    }),
+            'hx-post': self.url_post,
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
         }
@@ -286,12 +284,21 @@ class UpdateRecordForm(forms.ModelForm):
         self.helper.add_input(Button(name='button',
                                      value='Отмена',
                                      css_class='btn',
-                                     hx_get=reverse_lazy('get_record',
+                                     hx_get=reverse_lazy('record_profile',
                                                          kwargs={
-                                                             'pk': self.instance.pk
+                                                             'record_pk': self.instance.pk
                                                          }),
                                      hx_target='#record-update-form',
                                      hx_swap="outerHTML"))
+
+    @property
+    def url_post(self):
+        url = reverse_lazy('record_update', kwargs={
+                                                'record_pk': self.instance.pk
+                                            })
+        params = self.initial.get('params')
+        self._url_pos = f'{url}?{params}'
+        return self._url_pos
 
     class Meta:
         model = Records

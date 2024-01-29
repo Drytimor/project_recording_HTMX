@@ -1,15 +1,15 @@
 <div>
     {{ event.name }}
-    <button hx-get="{% url 'event_profile' org_pk=organization_id pk=event.id %}"
+    <button hx-get="{% url 'event_profile' org_pk=organization_id event_pk=event.id %}"
             hx-target="#org-profile"
             hx-select="#org-profile"
             hx-swap="outerHTML"
-            hx-push-url="{% url 'event_profile' org_pk=organization_id pk=event.id %}"
+            hx-push-url="true"
             class="btn">
             профиль
     </button>
 
-    <button hx-post="{% url 'event_delete' pk=event.id %}"
+    <button hx-post="{% url 'event_delete' org_pk=organization_id event_pk=event.id %}"
             hx-target="closest div"
             hx-swap="outerHTML"
             class="btn">

@@ -1,19 +1,5 @@
 {% if organization %}
 
-    <p>
-        <button hx-get="{% url 'employees_list' pk=organization.id %}"
-                hx-target="#org-profile"
-                class="btn">
-            сотрудники
-        </button>
-
-        <button hx-get="{% url 'events_list' pk=organization.id %}"
-                hx-target="#org-profile"
-                class="btn">
-            мероприятия
-        </button>
-    </p>
-
     {% include 'organizations/pattern/profile.html' %}
 
 {% endif %}

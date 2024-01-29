@@ -2,35 +2,38 @@
 
 
 <div id="user-records-list-with-filters">
+    {% if user_records %}
+        <form class="row g-3"
+              hx-get="{% url 'records_user' page=1 user_pk=user_pk event_pk=event_pk %}"
+              hx-target="next #user-records-list"
+              hx-select="#user-records-list"
+              hx-params="*"
+              hx-swap="outerHTML">
 
-    <form class="row g-3"
-          hx-get="{% url 'records_user' page=1 user_pk=user_pk event_pk=event_pk %}"
-          hx-target="#user-records-list"
-          hx-select="#user-records-list"
-          hx-params="*"
-          hx-swap="outerHTML">
+            <div class="col-md-10">
 
-        <div class="col-md-10">
-            {{ filter_form.datetime.label_tag }}
-            {{ filter_form.datetime }}
-            {{ filter_form.status_opening.label_tag }}
-            {{ filter_form.status_opening }}
-            <input class="btn col-md-2" type="submit" value="Применить">
+                {{ filter_form.datetime.label_tag }}
+                {{ filter_form.datetime }}
+                {{ filter_form.status_opening.label_tag }}
+                {{ filter_form.status_opening }}
+                <input class="btn col-md-2" type="submit" value="Применить">
 
-        </div>
+            </div>
 
-    </form>
+        </form>
+
+    {% endif %}
 
     <div id="user-records-list">
         {% if user_records %}
+
+            {% include 'records/pattern/paginator_user_records.html' %}
 
             {% for record in user_records %}
                 <div id="user-record">
                     {% include 'records/pattern/user_records.html' %}
                 </div>
             {% endfor %}
-
-            {% include 'records/pattern/paginator_user_records.html' %}
 
         {% else %}
 

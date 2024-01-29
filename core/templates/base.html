@@ -88,6 +88,7 @@
 {% endblock modal %}
 
 <div class="container-fluid" id="container">
+
     <div class="row"
          id="row-main">
 
@@ -98,20 +99,26 @@
             </div>
         {% endblock left_col %}
 
-        {% block central_col %}
-        <!--Центральная колонка-->
-            <div class="col-8 px-5 pt-5">
-                <div id="central-col"></div>
-            </div>
-        {% endblock central_col %}
+        <div class="col-10 pt-5">
+            <div class="row"
+             id="row-right">
 
-        {% block right_col %}
-        <!--Правая колонка-->
-            <div class="col-2 pt-5">
-                <div class="p-3"></div>
-            </div>
-        {% endblock right_col %}
+                {% block central_col %}
+                <!--Центральная колонка-->
+                    <div class="col-10 px-5">
+                        <div class="p-3" id="central-col"></div>
+                    </div>
+                {% endblock central_col %}
 
+                {% block right_col %}
+                <!--Правая колонка-->
+                    <div class="col-2">
+                        <div class="p-3"></div>
+                    </div>
+                {% endblock right_col %}
+
+            </div>
+        </div>
     </div>
 </div>
 

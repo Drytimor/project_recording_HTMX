@@ -4,9 +4,9 @@
     <div>
         <button class="btn"
                 hx-get="{% url 'event_info' org_pk=event.organization.id pk=event.id %}"
-                hx-target="#event-list"
+                hx-target="#row-main"
                 hx-swap="outerHTML"
-                hx-push-url="{% url 'event_info' org_pk=event.organization.id pk=event.id %}">
+                hx-push-url="true">
                 перейти
         </button>
 

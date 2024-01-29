@@ -1,7 +1,6 @@
 from django.core.paginator import Paginator
 from django.views.generic.base import TemplateResponseMixin
 import os.path
-from django.core.cache import cache
 
 
 class CustomMixin:
@@ -12,30 +11,16 @@ class CustomMixin:
     user_id = None
     page_obj = None
     elided_page_range = None
+    filter_form = None
+    params = None
 
     def set_class_attributes_from_request(self):
-        for attr, param in self.get_attr_from_request().items():
+        for attr, param in self.set_class_attributes_from_kwargs_request().items():
             setattr(self, attr, getattr(self, 'kwargs').get(param))
 
-    def get_attr_from_request(self):
+    def set_class_attributes_from_kwargs_request(self):
         attr = {}
         return attr
-
-    def get_or_set_user_id_from_cache(self):
-        session_key_user = self.request.session.session_key
-        user_id_from_cache = cache.get(key=session_key_user)
-        if user_id_from_cache is None:
-            user_id = self.request.user.id
-            if user_id:
-                cache.set(key=session_key_user,
-                          value=user_id,
-                          timeout=60 ** 2 * 12)
-            else:
-                return
-        else:
-            return user_id_from_cache
-
-        return user_id
 
     def create_pagination(self, object_list, per_page=1, orphans=1,
                           on_each_side=1, on_ends=1):
@@ -48,9 +33,11 @@ class CustomMixin:
 
         page_obj = paginator.get_page(number=page_number)
 
-        elided_page_range = paginator.get_elided_page_range(number=page_number,
-                                                            on_each_side=on_each_side,
-                                                            on_ends=on_ends)
+        elided_page_range = paginator.get_elided_page_range(
+            number=page_number,
+            on_each_side=on_each_side,
+            on_ends=on_ends)
+
         return page_obj, elided_page_range
 
 

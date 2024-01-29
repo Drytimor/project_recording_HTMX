@@ -3,11 +3,11 @@
         {% block event_profile %}
             {% include 'events/event_update.html' %}
 
-            <button hx-get="{% url 'records_list' org_pk=organization_id pk=event_id  %}"
+            <button hx-get="{% url 'org_records_list' org_pk=organization_id event_pk=event_id page=1 %}"
                     hx-target="#record-profile"
                     hx-select="#record-profile"
                     hx-swap="outerHTML"
-                    hx-push-url="{% url 'records_list' org_pk=organization_id pk=event_id %}"
+                    hx-push-url="true"
                     class="btn">
                     записи
             </button>
