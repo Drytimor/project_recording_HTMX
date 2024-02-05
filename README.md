@@ -3,5 +3,5 @@ The project provides a web application for searching, recording and creating var
 There are two entities in the project:
 1) Client:
    - search, registration for an event;
-2) Organization
-  - event creation
+2) Organization:
+   - event creation;
