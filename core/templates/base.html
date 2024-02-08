@@ -77,14 +77,33 @@
         </div>
     </div>
 <!-- Модальное окно входа пользователя-->
-    <div class="modal" id="modal-window-login" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modal-window-auth-label" aria-hidden="true">
+    <div class="modal"
+         id="modal-window-login"
+         data-bs-keyboard="false"
+         tabindex="-1"
+         aria-labelledby="modal-window-auth-label"
+         aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-body" id="modal-form-login">
+                <div class="modal-body"
+                     id="modal-form-login">
                 </div>
             </div>
         </div>
     </div>
+
+<!--Модальное окно ссылки на регистрацию-->
+<div class="modal" tabindex="-1" id="modal-link-auth">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-body">
+            <h5>Необходима регистрация</h5>
+        </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock modal %}
 
 <div class="container-fluid" id="container">

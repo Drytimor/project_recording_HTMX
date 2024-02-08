@@ -1,12 +1,62 @@
 {% extends 'organizations/organization_profile.html' %}
 
 
-{% block org_profile %}
+{% block central_col %}
+<!--Центральная колонка-->
+<div class="col-10 px-5">
+    <div class="p-3" id="central-col">
 
-    {% block org_config %}
-        {{ block.super }}
-    {% endblock org_config %}
+        {% block emp_profile %}
+            <div id="emp-profile">
+                {% if messages %}
 
-    {% include 'employees/htmx/employee_list.html' %}
+                    {% for message in messages %}
+                        {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                            {{ message }}
+                            <a role="button"
+                               hx-get="{{message.extra_tags.url}}"
+                               hx-target="#row-right"
+                               hx-swap="innerHTML"
+                               hx-push-url="true">
+                               Перейти
+                            </a>
+                        {% endif %}
+                    {% endfor %}
 
-{% endblock org_profile %}
+                {% else %}
+
+                    <div>
+                        <button id="btn_show_form_emp"
+                                hx-get="{% url 'employee_create' org_pk=organization_id %}"
+                                hx-target="#org-employees-list"
+                                hx-swap="afterbegin"
+                                class="btn">
+                                добавить сотрудника
+                        </button>
+                    </div>
+
+                    <div id="org-employees-list">
+                        {% if employees %}
+
+                            {% for employee in employees %}
+                                {% include 'employees/employee_create.html' %}
+                            {% endfor %}
+
+                            {% include 'employees/pattern/paginator_employees_list.html' %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endblock emp_profile %}
+
+    </div>
+</div>
+{% endblock central_col %}
+
+<!--Правая колонка-->
+{% block right_col %}
+    <div class="col-2">
+        <div class="p-3">
+        </div>
+    </div>
+{% endblock right_col %}

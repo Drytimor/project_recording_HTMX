@@ -4,9 +4,13 @@
 {% block org_profile %}
     <div id="emp-profile">
         {% if employees %}
+
             {% for employee in employees %}
                 {% include 'employees/pattern/org_employees.html' %}
             {% endfor %}
+
+            {% include 'employees/pattern/paginator_organization_employees.html' %}
+
         {% endif %}
     </div>
 {% endblock org_profile %}

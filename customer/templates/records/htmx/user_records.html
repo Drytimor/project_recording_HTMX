@@ -4,7 +4,7 @@
 <div id="user-records-list-with-filters">
     {% if user_records %}
         <form class="row g-3"
-              hx-get="{% url 'records_user' page=1 user_pk=user_pk event_pk=event_pk %}"
+              hx-get="{% url 'user_records_in_event' page=1 user_pk=user_pk event_pk=event_pk %}"
               hx-target="next #user-records-list"
               hx-select="#user-records-list"
               hx-params="*"

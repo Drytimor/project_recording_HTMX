@@ -2,7 +2,7 @@
     <div><label>Название</label>: {{ event.name }} </div>
     <div><label>Вход</label>: {{ event.status_tariff }}</div>
     <button class="btn"
-            hx-get="{% url 'event_info' pk=event.id org_pk=organization_id %}"
+            hx-get="{% url 'event_info' event_pk=event.id org_pk=organization_id %}"
             hx-target="#row-right"
             hx-select="#row-right"
             hx-swap="outerHTML"

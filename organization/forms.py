@@ -1,5 +1,5 @@
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Button, Hidden
+from crispy_forms.layout import Submit, Button, Hidden, Layout, Field
 from django import forms
 from django.urls import reverse_lazy
 from organization.models import Categories, Organizations, Employees, Events, Records
@@ -58,7 +58,7 @@ class UpdateOrganizationForm(forms.ModelForm):
                                      value='Отмена',
                                      css_class='btn',
                                      hx_get=reverse_lazy('organization_profile'),
-                                     hx_select='#central-col',
+                                     hx_select='#org-profile',
                                      hx_target="#org-update-form",
                                      hx_swap="outerHTML"))
 
@@ -105,6 +105,10 @@ class CreateEventForm(forms.ModelForm):
     def organization(self):
         return self._organization
 
+    def clean(self):
+        self.cleaned_data['organization_id'] = self.organization
+        super().clean()
+
     class Meta:
         model = Events
         fields = ('name', 'employees', 'status_tariff')
@@ -114,7 +118,7 @@ class UpdateEventForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['employees'].queryset = Employees.objects.filter(organization_id=self.instance.organization_id)
+        self.fields['employees'].queryset = self.initial['organization_employees']
         self.helper = FormHelper(self)
         self._organization = self.initial['organization_id']
         self.helper.form_id = 'event-update-form'
@@ -169,19 +173,26 @@ class CreateEmployeeForm(forms.ModelForm):
             'hx-target': 'this',
             'hx-swap': 'outerHTML',
         }
-        self.helper.add_input(Submit(name='submit',
-                                     value='Создать'))
 
-        self.helper.add_input(Button(name='button',
-                                     value='Закрыть',
-                                     css_class='btn',
-                                     hx_get=reverse_lazy('employee_profile'),
-                                     hx_target='#employee-create-form',
-                                     hx_swap="outerHTML"))
+        self.helper.layout = Layout(
+            Field('name'),
+
+            Submit(name='submit', value='Создать'),
+            Button(name='button',
+                   value='Закрыть',
+                   css_class='btn',
+                   hx_get=reverse_lazy('employee_profile'),
+                   hx_target='#employee-create-form',
+                   hx_swap="outerHTML"),
+        )
 
     @property
     def organization(self):
         return self._organization
+
+    def clean(self):
+        self.cleaned_data['organization_id'] = self.organization
+        super().clean()
 
     class Meta:
         model = Employees
@@ -254,6 +265,10 @@ class CreateRecordForm(forms.ModelForm):
     @property
     def event(self):
         return self._event
+
+    def clean(self):
+        self.cleaned_data['events_id'] = self.event
+        super().clean()
 
     class Meta:
         model = Records

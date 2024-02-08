@@ -2,12 +2,9 @@
 {% load crispy_forms_tags %}
 
 
-{% block org_profile %}
-
-    {% block org_config %}
-        {{ block.super }}
-    {% endblock org_config %}
-
+{% block central_col %}
     {% include 'events/htmx/event_profile.html' %}
+{% endblock central_col %}
 
-{% endblock org_profile %}
+{% block right_col %}
+{% endblock right_col %}

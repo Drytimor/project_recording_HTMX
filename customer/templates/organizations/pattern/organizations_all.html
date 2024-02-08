@@ -2,7 +2,7 @@
     <div><label>Название</label>: {{ organization.name }}</div>
     <div>
         <label>Категория</label>: {{ organization.category }}
-        <button hx-get="{% url 'organization_info' pk=organization.id %}"
+        <button hx-get="{% url 'organization_info' org_pk=organization.id %}"
                 hx-target="#row-main"
                 hx-swap="outerHTML"
                 hx-push-url="true"

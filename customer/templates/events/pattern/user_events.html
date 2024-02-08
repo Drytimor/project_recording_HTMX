@@ -1,8 +1,8 @@
 <div><label>Организация</label>:
-    <a hx-get="{% url 'organization_info' pk=event.organization.id %}"
+    <a hx-get="{% url 'organization_info' org_pk=event.organization.id %}"
        hx-swap="innerHTML"
        hx-target="#row-main"
-       hx-push-url="{% url 'organization_info' pk=event.organization.id %}">
+       hx-push-url="true">
        {{ event.organization.name }}
     </a>
 </div>
@@ -18,14 +18,14 @@
 
 <div>
     <button class="btn"
-            hx-get="{% url 'records_user' page=1 user_pk=user_pk event_pk=event.id %}"
+            hx-get="{% url 'user_records_in_event' page=1 user_pk=user_pk event_pk=event.id %}"
             hx-target="next #user-records-list-with-filters"
             hx-swap="outerHTML">
             мои записи
     </button>
 
     <button class="btn"
-            hx-get="{% url 'event_records_user' page=1 user_pk=user_pk event_pk=event.id %}"
+            hx-get="{% url 'records_event_for_user' page=1 user_pk=user_pk event_pk=event.id %}"
             hx-target="next #user-records-list-with-filters"
             hx-swap="outerHTML">
             все записи

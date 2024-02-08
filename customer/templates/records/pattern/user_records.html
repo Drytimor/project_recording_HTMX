@@ -3,7 +3,7 @@
 <p><label>Дата</label>: {{ record.datetime }}</p>
 
 <button class="btn"
-        hx-delete="{% url 'record_user_delete' pk=record.id user_pk=user_pk event_pk=event_pk %}"
+        hx-delete="{% url 'delete_user_record' record_pk=record.id user_pk=user_pk %}"
         hx-target="closest div"
         hx-swap="outerHTML">
         отменить

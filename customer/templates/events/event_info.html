@@ -18,10 +18,10 @@
             {% include 'events/pattern/event_info.html' %}
         {% endblock event_info %}
 
-        <div id="event-records-all-with-filters">
-            {% block record_all %}
-            {% endblock record_all %}
-        </div>
+        {% block record_all %}
+            <div id="event-records-all-with-filters"></div>
+        {% endblock record_all %}
+
     </div>
 {% endblock event_profile %}
 

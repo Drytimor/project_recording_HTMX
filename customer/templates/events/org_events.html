@@ -15,9 +15,13 @@
 {% block event_profile %}
     <div id="event-profile">
         {% if events %}
+
             {% for event in events %}
                 {% include 'events/pattern/org_events.html' %}
             {% endfor %}
+
+            {% include 'events/pattern/paginator_organization_events.html' %}
+
         {% endif %}
     </div>
 
@@ -27,7 +31,7 @@
     <!--Правая колонка-->
     <div class="col-2">
         <div class="p-3">
-            <form hx-get="{% url 'organization_events' pk=organization_id %}"
+            <form hx-get="{% url 'organization_events' org_pk=organization_id page=1 %}"
                   hx-target="#event-profile"
                   hx-select="#event-profile"
                   hx-params="*"

@@ -2,9 +2,9 @@
 
 
 <div id="user-records-list-with-filters">
-    {% if user_event_records %}
+    {% if records_event %}
         <form class="row g-3"
-              hx-get="{% url 'event_records_user' page=1 user_pk=user_pk event_pk=event_pk %}"
+              hx-get="{% url 'records_event_for_user' page=1 user_pk=user_pk event_pk=event_pk %}"
               hx-target="next #user-records-list"
               hx-select="#user-records-list"
               hx-params="*"
@@ -25,11 +25,11 @@
     {% endif %}
 
     <div id="user-records-list">
-        {% if user_event_records %}
+        {% if records_event %}
 
             {% include 'records/pattern/paginator_user_event_records.html' %}
 
-            {% for record in user_event_records %}
+            {% for record in records_event %}
                 {% include 'records/pattern/event_records.html' %}
             {%  endfor %}
 

@@ -5,7 +5,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import TemplateResponseMixin, ContextMixin
 from django.views.generic.edit import FormMixin
 
-from organization.services import _get_or_set_user_object_from_cache
 from .forms import UserUpdateForm
 from django.template import loader
 from django.template.context_processors import csrf
@@ -77,10 +76,7 @@ class Profile(TemplateResponseMixin, ContextMixin, View):
     user = None
 
     def get(self, *args, **kwargs):
-
-        self.user = _get_or_set_user_object_from_cache(
-            session_key_for_cache=self.request.session.session_key,
-           user=self.request.user).get('user')
+        self.user = self.request.user
 
         context = self.get_context_data(user=self.user)
         return self.render_to_response(context=context)

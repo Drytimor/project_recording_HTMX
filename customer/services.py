@@ -1,214 +1,242 @@
-from django.db.models import F, Prefetch, Q
+from django.db.models import F
 from django.db import transaction
-from allauth_app.settings import CACHE_KEY_USER_ASSIGNED_EVENTS, CACHE_KEY_MODEL_OBJECT_ID, \
-    CACHE_KEY_ALL_OBJECT_FROM_DB, CACHE_KEY_FILTER_NAME
-from customer.filters import EventsFilter, OrganizationFilter, RecordsListUserFilter, EventsListUserFilter, \
-    OrganizationEventsFilter
+
+from allauth_app.settings import (
+    CACHE_KEY_MODEL_OBJECT_ID, CACHE_KEY_FILTER_NAME, AUTH_USER_MODEL)
+
 from customer.models import StatusRecordingChoices, Recordings, AssignedEvents
-from customer.tasks import set_cache_assigned_user_events
+
+from customer.selectors import (
+    _get_organizations_all_from_cache, _get_organizations_all_from_db, OrganizationFilter,
+    EventsFilter, EventsListUserFilter, _create_filtered_object, QuerySet, _get_organization_events_from_db,
+    QueryDict, _get_organization_object_from_db, _get_events_all_from_cache, _get_events_all_from_db,
+    _get_assigned_user_events_from_cache, _get_assigned_user_events_from_db,
+    _get_event_card_from_db, EventRecordsListFilter,
+    _get_user_records_in_event_from_db, UserRecordsInEventFilter, _get_event_records,
+    _get_event_records_with_registered_user_field, _get_user_events_with_assigned_field_for_profile
+)
+
+from customer.tasks import (
+    task_set_cache_organizations_all, cache, task_set_cache_events_all,
+    task_delete_assigned_user_events_from_cache, task_set_cache_assigned_user_events,
+    task_delete_records_all_from_cache)
+
 from organization.models import Organizations, Events, Records
-from organization.todo import create_card_record_user
-from django.core.cache import cache
-from django.db.models.query import QuerySet
-from django.http.request import QueryDict
+from organization.selectors import OrganizationEventsFilter, _get_organization_employees, _get_event_profile
+from organization.services import _get_user_object
 from django.forms import Form
 
 
-# def get_model_objects_from_cache(
-#         cache_key_all_objects: str,
-#         unique_cache_key_objects: str,
-#         queryset_from_db: QuerySet,
-#         timeout_from_cache: int = 60) -> QuerySet | list:
-#
-#     queryset = cache.get_or_set(key=cache_key_all_objects,
-#                                 default=queryset_from_db,
-#                                 timeout=timeout_from_cache)
-#
-#     model_object_from_cache = cache.get_many(
-#         keys=[unique_cache_key_objects.format(model=_object.__class__.__name__, object_id=_object.id) for _object in
-#               queryset]
-#     ).values()
-#
-#     if not model_object_from_cache:
-#         cache.set_many(
-#             {unique_cache_key_objects.format(model=_object.__class__.__name__,
-#                                              object_id=_object.id): _object for _object in queryset},
-#             timeout=timeout_from_cache)
-#
-#         return queryset
-#
-#     return list(model_object_from_cache)
-
-
-def get_filters_model_objects_from_cache(
-        data: QueryDict,
-        filter_name: str,
-        filter_class,
-        cache_key_all_objects: str,
-        queryset_from_db: QuerySet,
-        timeout_from_cache: int = 60*2) -> tuple[list, Form]:
-
-    queryset = cache.get_or_set(key=cache_key_all_objects,
-                                default=queryset_from_db,
-                                timeout=timeout_from_cache)
-
-    filter_objects = filter_class(data=data,
-                                  queryset=queryset,
-                                  filter_name=filter_name)
-
-    filtered_objects = filter_objects.qs
-    filter_form = filter_objects.form
-
-    return filtered_objects, filter_form
-
-
 # CRUD Organization
-def get_all_organization_using_filter(data: QueryDict) -> tuple[list, Form, str]:
+def get_organizations_all(data: QueryDict) -> tuple[QuerySet['Organizations'], 'Form', str]:
 
-    cache_key_organization_all = CACHE_KEY_ALL_OBJECT_FROM_DB.format(model='Organizations')
+    organizations = _get_organizations_all_from_cache()
+    if organizations is None:
+        organizations = _get_organizations_all_from_db()
+        task_set_cache_organizations_all(organization=organizations)
+
+    filtered_organizations, filter_name, params = _get_filtered_organizations(
+        organizations=organizations, data=data)
+
+    return filtered_organizations, filter_name, params
+
+
+def _get_filtered_organizations(
+        organizations: QuerySet['Organizations'], data: QueryDict):
+
     params = data.urlencode()
-    cache_key_filter_name = CACHE_KEY_FILTER_NAME.format(filter_name=f'organizations_all_{params}')
-    organization_from_db = Organizations.objects.select_related('category')
+    filter_class = OrganizationFilter
+    filter_name = CACHE_KEY_FILTER_NAME.format(filter_name=f'organizations_all_{params}')
 
-    filtered_organizations, filter_form = get_filters_model_objects_from_cache(
-        data=data,
-        filter_name=cache_key_filter_name,
-        filter_class=OrganizationFilter,
-        cache_key_all_objects=cache_key_organization_all,
-        queryset_from_db=organization_from_db
-    )
+    filtered_organizations, filter_form = _create_filtered_object(
+        queryset=organizations, data=data,
+        filter_class=filter_class, filter_name=filter_name)
 
     return filtered_organizations, filter_form, params
 
 
-def get_organization_info_from_db(organization_id: int):
-    organization = Organizations.objects.select_related('category').get(id=organization_id)
+def get_organization_info(organization_id: int):
+    organization = _get_organization_object_from_db(organization_id=organization_id)
 
     return organization
 
 
 # CRUD Event
-def get_all_events_using_filter(user_id: int, data: QueryDict) -> tuple[list, Form, str]:
+def get_events_all(user_session_key: str, data: QueryDict,
+                   user: 'AUTH_USER_MODEL' = None):
 
-    cache_key_events_all = CACHE_KEY_ALL_OBJECT_FROM_DB.format(model='Events')
+    events = _get_events_all_from_cache()
+    if events is None:
+        events = _get_events_all_from_db()
+        task_set_cache_events_all(events=events)
+
+    filtered_events, filter_form, params = _get_filtered_events(events=events, data=data)
+
+    user_object = _get_user_object(user_session_key=user_session_key, user=user)
+
+    if user_object:
+        user = user_object.get('user').pk
+        assigned_user_events = _get_assigned_user_events(user_id=user)
+        filtered_events = _set_field_assigned(events=filtered_events, assigned_events_user=assigned_user_events)
+
+    return filtered_events, filter_form, params, user
+
+
+def _get_filtered_events(events: QuerySet['Events'], data: QueryDict):
+
     params = data.urlencode()
-    cache_key_filter_name = CACHE_KEY_FILTER_NAME.format(filter_name=f'events_all_{params}')
-    events_from_db = Events.objects.select_related('organization')
+    filter_name = CACHE_KEY_FILTER_NAME.format(filter_name=f'events_all_{params}')
+    filter_class = EventsFilter
 
-    filtered_events, filter_form = get_filters_model_objects_from_cache(
-        data=data,
-        filter_name=cache_key_filter_name,
-        filter_class=EventsFilter,
-        cache_key_all_objects=cache_key_events_all,
-        queryset_from_db=events_from_db,
-        )
-
-    if user_id:
-        filtered_events_with_field_assigned = sets_in_events_filed_assigned(user_id=user_id, events=filtered_events)
-
-        return filtered_events_with_field_assigned, filter_form, params
+    filtered_events, filter_form = _create_filtered_object(
+        queryset=events, data=data,
+        filter_class=filter_class,
+        filter_name=filter_name
+    )
 
     return filtered_events, filter_form, params
 
 
-def get_event_card_from_db(event_id: int):
+def get_event_card(event_id: int):
 
-    event = (Events.objects.filter(id=event_id)
-                           .prefetch_related(
-                           Prefetch(lookup='employees',
-                                    to_attr='employees_event')))
-
-    return event.get()
+    event = _get_event_card_from_db(event_id=event_id)
+    return event
 
 
-def get_events_organizations_from_db(organization_id: int, data: QueryDict):
+def get_organization_events(organization_id: int, data: QueryDict):
 
-    events_organization = Events.objects.filter(organization_id=organization_id)
+    events_organization = _get_organization_events_from_db(organization_id=organization_id)
     params = data.urlencode()
 
-    filter_object_events_organizations = OrganizationEventsFilter(data=data,
-                                                                  queryset=events_organization)
+    filtered_organization_events, filter_form = _create_filtered_object(
+        queryset=events_organization,
+        filter_class=OrganizationEventsFilter,
+        data=data)
 
-    filtered_events_organizations = filter_object_events_organizations.qs
-    filter_form = filter_object_events_organizations.form
-
-    return filtered_events_organizations, filter_form, params
-
-
-def get_user_events_from_db(user_id: int, data: QueryDict):
-
-    params = data.urlencode()
-
-    user_events_id = (Recordings.objects
-                      .values_list('record__events__id')
-                      .filter(user_id=user_id))
-
-    assigned_events_user = get_or_set_assigned_user_events_from_cache(user_id=user_id)
-
-    user_events = (Events.objects
-                   .select_related('organization')
-                   .prefetch_related(Prefetch('employees', to_attr='employees_event'))
-                   .filter(Q(id__in=user_events_id) | Q(id__in=assigned_events_user)))
-
-    filter_objects_user_events = EventsListUserFilter(data=data,
-                                                      queryset=user_events)
-
-    filtered_events_user = filter_objects_user_events.qs
-    filter_form = filter_objects_user_events.form
-
-    user_events = set_field_assigned(events=filtered_events_user,
-                                     assigned_events_user=assigned_events_user)
-
-    return user_events, filter_form, params
+    return filtered_organization_events, filter_form, params
 
 
-def get_event_and_all_records_from_db_for_customer(user_id: int, event_id: int):
+def get_organization_employees(organization_id: int):
+    organization_employees = _get_organization_employees(organization_id=organization_id)
+    return organization_employees
 
-    event = (Events.objects.filter(id=event_id)
-                           .prefetch_related(
-                            Prefetch(lookup='employees',
-                                     to_attr='employees_event'))
-                           .get())
-    if user_id:
-        records = event.records.prefetch_related(
-                                   Prefetch(lookup='recordings',
-                                            queryset=Recordings.objects.select_related('user')
-                                                                       .only('user_id'),
-                                            to_attr='user_recordings'))
 
-        for recordings in records:
-            registered_user_flag = any(user_id == _recordings.user.id for _recordings in recordings.user_recordings)
-            recordings.registered_user = registered_user_flag
+def get_user_events(user: 'AUTH_USER_MODEL', user_session_key: str,
+                    data: QueryDict):
+
+    user_id = _get_user_object(
+        user_session_key=user_session_key, user=user).get('user').pk
+
+    user_events = _get_user_events_with_assigned_field_for_profile(user_id=user_id)
+
+    filtered_user_events, filter_form, params = (
+        _get_filtered_user_events(user_events=user_events, data=data)
+    )
+    return filtered_user_events, filter_form, params, user_id
+
+
+def _get_assigned_user_events(user_id: int):
+
+    assigned_user_events = _get_assigned_user_events_from_cache(user_id=user_id)
+
+    if assigned_user_events is None:
+        assigned_user_events = dict(_get_assigned_user_events_from_db(user_id=user_id))
+        task_set_cache_assigned_user_events(assigned_user_events=assigned_user_events, user_id=user_id)
+
+    return assigned_user_events
+
+
+def _set_field_assigned(events: QuerySet | list, assigned_events_user: dict) -> QuerySet | list:
+
+    for event in events:
+        event.assigned = True if assigned_events_user.get(event.id) else False
+
+    return events
+
+
+def get_event_and_event_records_for_customer(
+        user_session_key: str, data: QueryDict,
+        event_id: int, user: 'AUTH_USER_MODEL' = None):
+
+    user_object = _get_user_object(
+        user_session_key=user_session_key, user=user
+    )
+    event = _get_event_card_from_db(event_id=event_id)
+
+    if user_object:
+        user = user_object.get('user').pk
+
+        event_records = (
+            _get_event_records_with_registered_user_field(
+                event_id=event_id, user_id=user)
+        )
     else:
-        records = event.records.all()
+        event_records = (
+            _get_event_records(event_id=event_id)
+        )
 
-    return event, records
+    event_records, filter_form, params = (
+        _get_filtered_event_records(event_records=event_records, data=data)
+    )
+
+    return event, event_records, filter_form, params, user
+
+
+def _get_filtered_event_records(
+        event_records: QuerySet, data: QueryDict) -> tuple[QuerySet['Records'], 'Form', str]:
+
+    filter_class = EventRecordsListFilter
+    params = data.urlencode()
+
+    filtered_event_records, filter_form = _create_filtered_object(
+        queryset=event_records, data=data,
+        filter_class=filter_class)
+
+    return filtered_event_records, filter_form, params
+
+
+def _get_filtered_user_events(user_events: QuerySet['Events'], data: QueryDict):
+
+    filter_class = EventsListUserFilter
+    params = data.urlencode()
+    filtered_user_events, filter_form = _create_filtered_object(
+        queryset=user_events, filter_class=filter_class,
+        data=data)
+
+    return filtered_user_events, filter_form, params
+
 
 @transaction.atomic
-def assigned_event_to_user(user_id: int, event_id: int):
+def set_assigned_event_to_user(
+        user: 'AUTH_USER_MODEL', user_session_key: str, event_id: int):
 
-    if user_id:
-        assigned_event = AssignedEvents.objects.create(user_id=user_id,
-                                                       event_id=event_id)
+    user_id = _get_user_object(
+        user_session_key=user_session_key, user=user).get('user').pk
 
-        delete_assigned_user_events_from_cache(user_id=user_id)
+    assigned_event = AssignedEvents.objects.create(user_id=user_id, event_id=event_id)
+    task_delete_assigned_user_events_from_cache(user_id=user_id)
 
-        return assigned_event
+    return assigned_event, user_id
 
 
 @transaction.atomic
-def delete_assigned_event_from_db(user_id: int, event_id: int):
-    deleted_event = (AssignedEvents.objects.filter(user_id=user_id,
-                                                   event_id=event_id)
-                     .delete())
+def delete_assigned_event_from_db(
+        user: 'AUTH_USER_MODEL', user_session_key: str, event_id: int):
 
-    delete_assigned_user_events_from_cache(user_id=user_id)
+    user_id = _get_user_object(
+        user_session_key=user_session_key, user=user).get('user').pk
 
-    return True if deleted_event else False
+    deleted_event = (
+        AssignedEvents.objects.filter(user_id=user_id, event_id=event_id).delete()
+    )
+    task_delete_assigned_user_events_from_cache(user_id=user_id)
+
+    return deleted_event
 
 
 @transaction.atomic
 def delete_event_and_all_records_user_from_db(user_id: int, event_id: int):
+
     recordings_user = (Recordings.objects.select_related('record')
                        .filter(user_id=user_id,
                                record__events__id=event_id))
@@ -217,59 +245,13 @@ def delete_event_and_all_records_user_from_db(user_id: int, event_id: int):
                                    event_id=event_id)
      .delete())
 
-    delete_assigned_user_events_from_cache(user_id=user_id)
+    task_delete_assigned_user_events_from_cache(user_id=user_id)
 
     id_records = (recording.record.id for recording in recordings_user)
     recordings_user.delete()
 
     (Records.objects.filter(id__in=id_records)
      .update(quantity_clients=F('quantity_clients') - 1))
-
-
-def get_or_set_assigned_user_events_from_cache(user_id: int) -> dict:
-
-    cache_key_user_assigned_events = CACHE_KEY_USER_ASSIGNED_EVENTS.format(user_id=user_id)
-    assigned_events_user_from_cache = cache.get(key=cache_key_user_assigned_events)
-
-    if assigned_events_user_from_cache is None:
-
-        assigned_events_user_from_db = dict(
-            AssignedEvents.objects.filter(user_id=user_id)
-                                  .values_list('event', 'user')
-        )
-
-        set_cache_assigned_user_events(
-            cache_key_user_assigned_events=cache_key_user_assigned_events,
-            assigned_events_user_from_db=assigned_events_user_from_db,
-            timeout_from_cache=60**2 * 5)
-
-        return assigned_events_user_from_db
-
-    return assigned_events_user_from_cache
-
-
-def set_field_assigned(events: QuerySet | list, assigned_events_user: dict) -> QuerySet | list:
-
-    for event in events:
-        event.assigned = True if assigned_events_user.get(event.id) else False
-
-    return events
-
-
-def sets_in_events_filed_assigned(user_id: int, events: QuerySet | list) -> QuerySet | list:
-
-    assigned_events_user = get_or_set_assigned_user_events_from_cache(user_id=user_id)
-
-    events_with_field_assigned = set_field_assigned(events=events,
-                                                    assigned_events_user=assigned_events_user)
-
-    return events_with_field_assigned
-
-
-def delete_assigned_user_events_from_cache(user_id: int):
-
-    cache_key_user_assigned_events = CACHE_KEY_USER_ASSIGNED_EVENTS.format(user_id=user_id)
-    cache.delete(cache_key_user_assigned_events)
 
 
 def delete_event_from_cache(event_id: int):
@@ -279,75 +261,74 @@ def delete_event_from_cache(event_id: int):
 
 
 # CRUD Record
-def get_user_records_from_db(
-        user_id: int,
-        event_id: int,
-        data: QueryDict) -> tuple[list, Form, str]:
+def get_user_records_in_event(user_id: int, event_id: int,
+                              data: QueryDict) -> tuple[list, Form, str]:
 
-    list_user_records_id = (Recordings.objects.filter(user_id=user_id,
-                                                      record__events__id=event_id)
-                                              .values_list('record', flat=True))
+    user_records_in_event = _get_user_records_in_event_from_db(
+        event_id=event_id, user_id=user_id)
 
-    user_records_from_db = Records.objects.filter(id__in=list_user_records_id)
-
-    user_records_filter = RecordsListUserFilter(data=data,
-                                                queryset=user_records_from_db)
-
-    filter_form = user_records_filter.form
-    user_records = user_records_filter.qs
+    user_records_in_event, filter_form = _create_filtered_object(
+        queryset=user_records_in_event, data=data,
+        filter_class=UserRecordsInEventFilter)
 
     params = data.urlencode()
 
-    return user_records, filter_form, params
+    return user_records_in_event, filter_form, params
 
 
-def get_user_event_records_from_db(user_id: int, event_id: int, data: QueryDict):
+def get_event_records_for_user_profile(user_id: int, event_id: int,
+                                       data: QueryDict):
 
-    event_recordings = (Recordings.objects.filter(record__events__id=event_id)
-                                  .select_related('user', 'record'))
-
-    event_records = Records.objects.filter(events_id=event_id)
-
-    records = create_card_record_user(user_id=user_id,
-                                      event_recordings=event_recordings,
-                                      event_records=event_records)
-
-    filter_object_user_event_records = RecordsListUserFilter(data=data,
-                                                             queryset=records)
-
-    filtered_user_event_records = filter_object_user_event_records.qs
-    filter_form = filter_object_user_event_records.form
+    event_records = _get_event_records_with_registered_user_field(user_id=user_id, event_id=event_id)
+    filtered_event_records, filter_form = _create_filtered_object(
+        queryset=event_records,
+        filter_class=UserRecordsInEventFilter,
+        data=data
+    )
     params = data.urlencode()
 
-    return filtered_user_event_records, filter_form, params
+    return filtered_event_records, filter_form, params
 
 
 @transaction.atomic
-def sign_up_for_event(user_id: int, record_id: int):
+def sign_up_for_event(user: 'AUTH_USER_MODEL', user_session_key: str,
+                      record_id: int):
 
-    if user_id:
+    user_object = _get_user_object(
+            user_session_key=user_session_key, user=user)
+
+    if user_object:
+        user_id = user_object.get('user').pk
+
         record = Records.objects.filter(id=record_id)
 
         Recordings.objects.create(record_id=record_id,
                                   user_id=user_id,
                                   status_recording=StatusRecordingChoices.PAID)
 
-        unique_cache_key_records_objects = CACHE_KEY_ALL_OBJECT_FROM_DB.format(model='Records')
-        cache.delete(unique_cache_key_records_objects)
+        task_delete_records_all_from_cache()
 
         record.update(quantity_clients=F('quantity_clients') + 1)
 
-        return record.get()
+        record = record.get()
+        # quantity_clients = record.get('quantity_clients')
+
+        return record
 
 
 @transaction.atomic
-def cancel_recording(user_id: int, record_id: int):
+def cancel_recording(user: 'AUTH_USER_MODEL', user_session_key: str,
+                     record_id: int):
+
+    user_id = _get_user_object(
+        user_session_key=user_session_key, user=user).get('user').pk
 
     record = Records.objects.filter(id=record_id)
     Recordings.objects.filter(user=user_id, record=record_id).delete()
     record.update(quantity_clients=F('quantity_clients') - 1)
+    record = record.get()
 
-    return record.get()
+    return record, user_id
 
 
 @transaction.atomic
@@ -356,8 +337,14 @@ def delete_recording_user_form_profile(user_id: int, record_id: int):
     record = Records.objects.filter(id=record_id)
 
     user_recordings = Recordings.objects.filter(user=user_id, record=record_id)
-    unique_cache_key_records_objects = CACHE_KEY_MODEL_OBJECT_ID.format(model='Records', object_id=record_id)
+    unique_cache_key_records_objects = CACHE_KEY_MODEL_OBJECT_ID.format(model_name='Records', object_id=record_id)
     cache.delete(unique_cache_key_records_objects)
     user_recordings.delete()
     record.update(quantity_clients=F('quantity_clients') - 1)
+
+
+
+
+
+
 

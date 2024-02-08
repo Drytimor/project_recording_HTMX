@@ -1,7 +1,7 @@
 <!--Центральная колонка-->
 <div class="col-10 px-5">
     <div class="p-3" id="central-col">
-        <div id="org-profile">
+        <div id="emp-profile">
             {% if messages %}
 
                 {% for message in messages %}
@@ -17,29 +17,28 @@
                     {% endif %}
                 {% endfor %}
 
-            {% else %}
-
-                <div>
-                    <button id="btn_show_form_emp"
-                            hx-get="{% url 'employee_form_create' org_pk=organization_id %}"
-                            hx-target="#org-employees-list"
-                            hx-swap="afterbegin"
-                            class="btn">
-                            добавить сотрудника
-                    </button>
-                </div>
-
-                <div id="org-employees-list">
-                    {% if employees %}
-
-                        {% for employee in employees %}
-                            {% include 'employees/employee_create.html' %}
-                        {% endfor %}
-
-                        {% include 'employees/pattern/paginator_employees_list.html' %}
-                    {% endif %}
-                </div>
             {% endif %}
+
+            <div>
+                <button id="btn_show_form_emp"
+                        hx-get="{% url 'employee_create' org_pk=organization_id %}"
+                        hx-target="#org-employees-list"
+                        hx-swap="afterbegin"
+                        class="btn">
+                        добавить сотрудника
+                </button>
+            </div>
+
+            <div id="org-employees-list">
+                {% if employees %}
+
+                    {% for employee in employees %}
+                        {% include 'employees/employee_create.html' %}
+                    {% endfor %}
+
+                    {% include 'employees/pattern/paginator_employees_list.html' %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

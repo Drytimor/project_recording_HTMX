@@ -1,4 +1,5 @@
 const navBar = document.querySelector('#nav-bar')
+const modalLinkAuth = new bootstrap.Modal(document.querySelector('#modal-link-auth'))
 
 const auth_user_nav_bar = `
     <li class="nav-item">
@@ -56,6 +57,12 @@ function insertAnonymNavBar(){
     document.body.addEventListener('AuthUser', insertAuthNavBar)
 }
 
+document.body.addEventListener('FailEntry', showModal)
+function showModal(e){
+    modalLinkAuth.show()
+    document.body.addEventListener('FailEntry', showModal)
+
+}
 
 class ControllerForm {
     constructor(

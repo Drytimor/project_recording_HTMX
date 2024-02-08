@@ -4,27 +4,28 @@
 <!--Центральная колонка-->
 <div class="col-10 px-5">
     <div class="p-3" id="central-col">
-        <div id="org-profile">
-            {% if messages %}
 
-                {% for message in messages %}
-                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
-                        {{ message }}
-                        <a role="button"
-                           hx-get="{{message.extra_tags.url}}"
-                           hx-target="#row-right"
-                           hx-swap="innerHTML"
-                           hx-push-url="true">
-                           Перейти
-                        </a>
-                    {% endif %}
-                {% endfor %}
+        {% block event-profile %}
+            <div id="event-profile">
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                            {{ message }}
+                            <a role="button"
+                               hx-get="{{message.extra_tags.url}}"
+                               hx-target="#row-right"
+                               hx-swap="innerHTML"
+                               hx-push-url="true">
+                               Перейти
+                            </a>
+                        {% endif %}
+                    {% endfor %}
 
-            {% else %}
+                {% endif %}
 
                 <div>
                     <button id="btn_show_form_event"
-                            hx-get="{% url 'event_form_create' org_pk=organization_id %}"
+                            hx-get="{% url 'event_create' org_pk=organization_id %}"
                             hx-target="#org-events-list"
                             hx-swap="afterbegin"
                             class="btn">
@@ -43,30 +44,33 @@
 
                     {% endif %}
                 </div>
+            </div>
+        {% endblock event-profile %}
 
-            {% endif %}
-        </div>
     </div>
 </div>
 
 <!--Правая колонка-->
 <div class="col-2">
     <div class="p-3">
-        {% if filter_form %}
 
-            <form hx-get="{% url 'org_events_list' page=1 %}?organization={{organization_id}}&{{ params }}"
-                  hx-target="#org-events-list"
-                  hx-select="#org-events-list"
-                  hx-params="*"
-                  hx-swap="outerHTML"
-                  hx-push-url="true">
+        {% block filter_form %}
+            {% if filter_form %}
 
-                  {{ filter_form | crispy }}
+                <form hx-get="{% url 'org_events_list' page=1 %}?organization={{organization_id}}&{{ params }}"
+                      hx-target="#org-events-list"
+                      hx-select="#org-events-list"
+                      hx-params="*"
+                      hx-swap="outerHTML"
+                      hx-push-url="true">
 
-                <input class="btn" type="submit" value="Найти">
+                      {{ filter_form | crispy }}
 
-            </form>
+                    <input class="btn" type="submit" value="Найти">
 
-        {% endif %}
+                </form>
+
+            {% endif %}
+        {% endblock filter_form %}
     </div>
 </div>

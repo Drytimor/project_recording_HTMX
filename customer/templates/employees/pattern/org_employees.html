@@ -1,10 +1,10 @@
 <div id="emp-info">
     <div><label>Имя</label>: {{ employee.name }}</div>
     <button class="btn"
-            hx-get="{% url 'employee_info' pk=employee.id org_pk=organization_id %}"
+            hx-get="{% url 'employee_info' emp_pk=employee.id org_pk=organization_id %}"
             hx-target="#emp-profile"
             hx-swap="innerHTML"
-            hx-push-url="{% url 'employee_info' pk=employee.id org_pk=organization_id %}">
+            hx-push-url="true">
             подробнее
     </button>
 </div>

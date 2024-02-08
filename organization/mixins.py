@@ -1,6 +1,7 @@
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.views.generic.base import TemplateResponseMixin
 import os.path
+from django.contrib import messages
 
 
 class CustomMixin:
@@ -22,7 +23,7 @@ class CustomMixin:
         attr = {}
         return attr
 
-    def create_pagination(self, object_list, per_page=1, orphans=1,
+    def create_pagination(self, object_list, per_page=2, orphans=1,
                           on_each_side=1, on_ends=1):
 
         page_number = self.request.GET.get('page_number') or self.kwargs.get('page') or 1
@@ -30,14 +31,13 @@ class CustomMixin:
         paginator = Paginator(object_list=object_list,
                               per_page=per_page,
                               orphans=orphans)
-
         page_obj = paginator.get_page(number=page_number)
 
         elided_page_range = paginator.get_elided_page_range(
             number=page_number,
             on_each_side=on_each_side,
-            on_ends=on_ends)
-
+            on_ends=on_ends
+        )
         return page_obj, elided_page_range
 
 
@@ -45,6 +45,7 @@ class CustomTemplateResponseMixin(TemplateResponseMixin):
     response_htmx = False
 
     def render_to_response(self, context, **response_kwargs):
+
         """
         Return a response, using the `response_class` for this view, with a
         template rendered with the given context.
@@ -63,7 +64,5 @@ class CustomTemplateResponseMixin(TemplateResponseMixin):
             **response_kwargs,
         )
 
-    def set_headers_to_response(self):
-        headers = {}
-        return headers
+
 

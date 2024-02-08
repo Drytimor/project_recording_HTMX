@@ -1,13 +1,8 @@
 {% extends 'employees/employee_list.html' %}
 
 
-{% block org_profile %}
-
-    {% block org_config %}
-        {{ block.super }}
-    {% endblock org_config %}
+{% block emp_profile %}
 
     {% include 'employees/htmx/employee_profile.html' %}
 
-{% endblock org_profile %}
-
+{% endblock emp_profile %}

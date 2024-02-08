@@ -1,12 +1,12 @@
 <div id="org-profile">
     <div><label>Название</label>: {{ organization.name }}</div>
     <div><label>Категория</label>: {{ organization.category }}</div>
-    <button hx-get="{% url 'org_form_update' org_pk=organization.id %}"
+    <button hx-get="{% url 'organization_update' org_pk=organization.id %}"
             hx-target="#org-profile"
             class="btn">
             редактировать
     </button>
-    <button hx-post="{% url 'organization_delete' org_pk=organization.id %}"
+    <button hx-delete="{% url 'organization_update' org_pk=organization.id %}"
             hx-target="#central-col"
             class="btn">
             удалить

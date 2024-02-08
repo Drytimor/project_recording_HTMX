@@ -1,24 +1,22 @@
 {% if event %}
-    <div id="event-profile">
-        <div><label>Название</label>: {{ event.name }}</div>
-        <div><label>Вход</label>: {{ event.status_tariff }}</div>
-        <div><label>Сотрудники</label>:
-            {% for employee in event.employees_event %}
-                {{ employee.name | default:'not'}}
-            {% endfor %}
-        </div>
-
-        <button hx-get="{% url 'event_form_update' org_pk=organization_id event_pk=event.id %}"
-                hx-target="#event-profile"
-                hx-swap="outerHTML"
-                class="btn">
-                редактировать
-        </button>
-
-        <button hx-post="{% url 'event_delete' org_pk=organization_id event_pk=event.id %}"
-                hx-target="#org-profile"
-                class="btn">
-                удалить
-        </button>
+    <div><label>Название</label>: {{ event.name }}</div>
+    <div><label>Вход</label>: {{ event.status_tariff }}</div>
+    <div><label>Сотрудники</label>:
+        {% for employee in event_employees %}
+            {{ employee.name | default:'not'}}
+        {% endfor %}
     </div>
+
+    <button hx-get="{% url 'event_update' org_pk=organization_id event_pk=event.id %}"
+            hx-target="#event-profile"
+            hx-swap="outerHTML"
+            class="btn">
+            редактировать
+    </button>
+
+    <button hx-delete="{% url 'event_profile' org_pk=organization_id event_pk=event.id %}"
+            hx-target="#event-profile"
+            class="btn">
+            удалить
+    </button>
 {% endif %}

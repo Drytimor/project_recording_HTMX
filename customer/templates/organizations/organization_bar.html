@@ -1,6 +1,6 @@
 <div id="org-bar">
     <p>
-        <button hx-get="{% url 'organization_info' pk=organization_id %}"
+        <button hx-get="{% url 'organization_info' org_pk=organization_id %}"
                 hx-target="#row-right"
                 hx-select="#row-right"
                 hx-swap="outerHTML"

@@ -1,14 +1,12 @@
 <div id="record-profile">
 
-    <div id="record-error{{ record.id }}"></div>
-
     <p><label>Лимит участников</label>: {{ record.limit_clients }}</p>
     <p><label>Количество участников</label>: {{ record.quantity_clients }}</p>
     <p><label>Дата</label>: {{ record.datetime }}</p>
 
     {% if record.registered_user %}
         <button class="btn"
-                hx-put="{% url 'record_cancel' pk=record.id %}"
+                hx-delete="{% url 'cancel_user_record' %}?record_pk={{ record.id }}"
                 hx-headers='{"X-CSRFToken": "{{ csrf_token }}" }'
                 hx-target="closest div"
                 hx-swap="outerHTML">
@@ -16,7 +14,7 @@
         </button>
     {% else %}
         <button class="btn"
-                hx-put="{% url 'record_sign_up' pk=record.id %}"
+                hx-put="{% url 'event_records' %}?record_pk={{ record.id }}"
                 hx-headers='{"X-CSRFToken": "{{ csrf_token }}" }'
                 hx-target="closest div"
                 hx-swap="outerHTML">
@@ -24,3 +22,6 @@
         </button>
     {% endif %}
 </div>
+
+
+

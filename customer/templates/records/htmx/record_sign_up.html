@@ -1,38 +1,19 @@
-{% if user.is_authenticated %}
 
-    <div id="record-profile">
-        <p><label>Лимит участников</label>: {{ record.limit_clients }}</p>
-        <p><label>Количество участников</label>: {{ record.quantity_clients }}</p>
-        <p><label>Дата</label>: {{ record.datetime }}</p>
+<div id="record-profile">
 
-        <button class="btn"
-                hx-put="{% url 'record_cancel' pk=record.id %}"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}" }'
-                hx-target="closest div"
-                hx-swap="outerHTML">
-                отменить
-        </button>
-    </div>
+    <p><label>Лимит участников</label>: {{ record.limit_clients }}</p>
+    <p><label>Количество участников</label>: {{ record.quantity_clients }}</p>
+    <p><label>Дата</label>: {{ record.datetime }}</p>
 
-{% else %}
+    <button class="btn"
+            hx-delete="{% url 'cancel_user_record' %}?record_pk={{ record.pk }}"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}" }'
+            hx-target="closest div"
+            hx-swap="outerHTML">
+            отменить
+    </button>
 
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Holy guacamole!</strong> You should check in on some of those fields below.
-        <a hx-get="{% url 'account_login' %}"
-           role="button"
-           hx-target="#modal-form-login"
-           data-bs-toggle="modal"
-           data-bs-target="#modal-window-login">
-           войдите
-        </a>
-        или
-        <a hx-get="{% url 'account_signup' %}"
-           role="button"
-           hx-target="#modal-form-signup"
-           data-bs-toggle="modal"
-           data-bs-target="#modal-window-signup">
-           зарегистрируетесь
-        </a>
-    </div>
+</div>
 
-{% endif %}
+
+
