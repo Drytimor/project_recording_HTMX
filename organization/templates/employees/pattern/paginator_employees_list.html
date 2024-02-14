@@ -1,0 +1,35 @@
+{% extends 'paginator.html' %}
+
+
+{% block link_previous %}
+    <a class="page-link"
+       hx-get="{% url 'org_employees_list' page=page_obj.previous_page_number %}?organization={{organization_id}}"
+       hx-target="#org-employees-list"
+       hx-select="#org-employees-list"
+       hx-swap="outerHTML"
+       hx-push-url="true">
+       «
+    </a>
+{% endblock link_previous %}
+
+{% block links_page_number %}
+    <a class="page-link"
+       hx-get="{% url 'org_employees_list' page=number %}?organization={{organization_id}}"
+       hx-target="#org-employees-list"
+       hx-select="#org-employees-list"
+       hx-swap="outerHTML"
+       hx-push-url="true">
+       {{ number }}
+    </a>
+{% endblock links_page_number %}
+
+{% block link_next %}
+    <a class="page-link"
+       hx-get="{% url 'org_employees_list' page=page_obj.next_page_number %}?organization={{organization_id}}"
+       hx-target="#org-employees-list"
+       hx-select="#org-employees-list"
+       hx-swap="outerHTML"
+       hx-push-url="true">
+       »
+    </a>
+{% endblock link_next %}

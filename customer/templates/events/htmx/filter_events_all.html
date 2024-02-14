@@ -1,0 +1,17 @@
+<div id="event-list">
+
+    {% if events %}
+
+        {% for event in events %}
+            {% include 'events/pattern/events_all.html' %}
+        {% endfor %}
+
+        {% include 'events/pattern/paginator_filter_events_all.html' %}
+
+    {% else %}
+
+        <div>Пусто</div>
+
+    {% endif %}
+
+</div>
