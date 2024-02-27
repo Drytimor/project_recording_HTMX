@@ -1,4 +1,4 @@
-# allauth_app
+# recording project
 The project provides a web application for searching, recording and creating various kinds of events
 There are two entities in the project:
 1) Client:
